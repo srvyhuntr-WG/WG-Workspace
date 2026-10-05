@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Workspace</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -49,7 +49,7 @@ h2{font-size:20px;margin:24px 0 10px}
 .tb[hidden]{display:none}.tb button[aria-pressed=true]{background:var(--bl2);border-color:var(--bl);color:var(--bl)}.tb .lb{flex:none;align-self:center;min-width:34px;text-align:center;font-weight:600;font-size:14px;color:var(--mut)}
 .tb .sw{width:44px;padding:0;display:grid;place-items:center}.tb .sw span{width:24px;height:24px;border-radius:50%;border:1px solid var(--ln)}
 .pg blockquote,.ex blockquote{border-left:3px solid #1A47C8;margin:8px 0;padding:2px 12px;color:#444}.pg hr,.ex hr{border:0;border-top:1px solid #999;margin:12px 0}
-html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden;touch-action:pan-x pan-y}body{overflow-x:hidden}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden;touch-action:pan-x pan-y pinch-zoom}body{overflow-x:hidden}
 .strip{scroll-padding:0 16px;display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:2px 16px 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}.strip::-webkit-scrollbar{display:none}
 .sc2{position:relative;flex:none;width:156px;scroll-snap-align:start;background:var(--sf);border:1px solid var(--ln);border-radius:14px;overflow:hidden}
 .sc2>button:first-child{display:block;width:100%;border:0;background:none;text-align:left;padding:0;min-height:0}
@@ -123,8 +123,6 @@ label{display:block;font-weight:500;font-size:14px;margin:12px 0 4px}
 <div id="toast" role="status"></div>
 <input type="file" id="fi" class="tp" accept=".docx,.pdf,.json">
 <input type="file" id="fp" class="tp" accept="application/pdf">
-<input type="file" id="fc" class="tp" accept="application/pdf">
-<input type="file" id="fm" class="tp" accept="application/pdf" multiple>
 <script>
 (()=>{const J='https://cdn.jsdelivr.net/npm/',F='https://fastly.jsdelivr.net/npm/',C='https://cdnjs.cloudflare.com/ajax/libs/';
 const ld=u=>new Promise(ok=>{const s=document.createElement('script');let d=0;const f=r=>{if(!d){d=1;clearTimeout(tm);if(!r)s.remove();ok(r)}},tm=setTimeout(()=>f(0),20000);s.src=u;s.onload=()=>f(1);s.onerror=()=>f(0);document.head.appendChild(s)});
@@ -254,7 +252,7 @@ let DB='wg';const ST='docs',BK='backups',KEEP_N=10,FULL='Storage is full. Back u
 const openDb=()=>new Promise((res,rej)=>{if(!window.indexedDB)return rej();const r=indexedDB.open(DB,2);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains(ST))d.createObjectStore(ST,{keyPath:'id'});if(!d.objectStoreNames.contains(BK))d.createObjectStore(BK,{keyPath:'id'})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);r.onblocked=()=>rej()});
 const tx=(db,mode,fn,st=ST)=>new Promise((res,rej)=>{const t=db.transaction(st,mode);let out;t.oncomplete=()=>res(out&&out.result);t.onerror=t.onabort=()=>rej(t.error||new Error('tx'));out=fn(t.objectStore(st))});
 const readLs=()=>{try{return JSON.parse(localStorage.getItem(K)||'[]').filter(d=>d&&d.id)}catch(e){return[]}};
-const snap=d=>({title:d.title,html:d.html,at:d.at});
+const snap=d=>({title:d.title,html:d.html,at:d.at,s:d.src?d.src.length:0,v:d.vh?d.vh.length:0,x:d.tx?JSON.stringify(d.tx):''});
 async function initDocs(){
 try{idb=await openDb();docs=await tx(idb,'readonly',s=>s.getAll());
 const old=readLs();
@@ -270,27 +268,27 @@ if(!idb){try{localStorage.setItem(K,JSON.stringify(docs))}catch(e){toast(FULL)}r
 q=q.then(async()=>{const puts=[],dels=[];
 await tx(idb,'readwrite',s=>{const ids=new Set(docs.map(d=>d.id));
 saved.forEach((_,id)=>{if(!ids.has(id)){s.delete(id);dels.push(id)}});
-docs.forEach(d=>{const p=saved.get(d.id);if(!p||p.html!==d.html||p.title!==d.title||p.at!==d.at){s.put(d);puts.push([d.id,snap(d)])}});
+docs.forEach(d=>{const p=saved.get(d.id),n=snap(d);if(!p||Object.keys(n).some(k=>p[k]!==n[k])){s.put(d);puts.push([d.id,n])}});
 return s.count()});
-dels.forEach(id=>saved.delete(id));puts.forEach(([id,v])=>saved.set(id,v))}).catch(()=>toast(FULL))};
+dels.forEach(id=>saved.delete(id));puts.forEach(([id,v])=>saved.set(id,v))}).catch(e=>toast(e&&e.name=='QuotaExceededError'?FULL:'Could not save your last change. Export a backup and reload the app.'))};
 
 let bks=[];
-const fpr=()=>docs.map(d=>d.id+':'+d.at+':'+(d.html||'').length+':'+(d.title||'')).join('|');
+const fpr=()=>docs.map(d=>d.id+':'+d.at+':'+(d.html||'').length+':'+(d.src||'').length+':'+(d.title||'')).join('|')+'#'+SS.map(x=>x.id+':'+x.at+':'+x.g.length).join('|');
 const when=t=>new Date(t).toLocaleString(undefined,{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
 const bmSave=()=>{try{localStorage.setItem('wg_bkm'+UK,JSON.stringify(bks))}catch(e){}};
 async function loadBks(fast){let m=null;try{m=JSON.parse(localStorage.getItem('wg_bkm'+UK))}catch(e){}
 if(Array.isArray(m)){bks=m.sort((a,b)=>b.id-a.id);return}
 if(fast||!idb){bks=[];return}
 bks=(await tx(idb,'readonly',s=>s.getAll(),BK)).map(b=>({id:b.id,at:b.at,n:b.n,reason:b.reason,fp:b.fp})).sort((a,b)=>b.id-a.id);bmSave()}
-async function mkBackup(reason,force){if(!idb)return;await loadBks();if(!docs.length)return;const fp=fpr(),top=bks[0];if(top&&top.fp===fp)return;if(!force&&top&&Date.now()-top.at<36e5)return;
-const rec={id:Date.now(),at:Date.now(),reason,fp,n:docs.length,docs:JSON.parse(JSON.stringify(docs))};
-await tx(idb,'readwrite',s=>{s.put(rec);bks.slice(KEEP_N-1).forEach(b=>s.delete(b.id));return s.count()},BK);bks=[{id:rec.id,at:rec.at,n:rec.n,reason:rec.reason,fp:rec.fp},...bks].slice(0,KEEP_N);bmSave()}
+async function mkBackup(reason,force){if(!idb)return;await loadBks();if(!SS.length)ssLoad();if(!docs.length&&!SS.length)return;const fp=fpr(),top=bks[0];if(top&&top.fp===fp)return;if(!force&&top&&Date.now()-top.at<36e5)return;
+const rec={id:Date.now(),at:Date.now(),reason,fp,n:docs.length,docs:JSON.parse(JSON.stringify(docs)),ss:JSON.parse(JSON.stringify(SS))};
+let kp=KEEP_N-1;const put=()=>tx(idb,'readwrite',s=>{s.put(rec);bks.slice(kp).forEach(b=>s.delete(b.id));return s.count()},BK);try{await put()}catch(e){kp=1;await put()}bks=[{id:rec.id,at:rec.at,n:rec.n,reason:rec.reason,fp:rec.fp},...bks].slice(0,kp+1);bmSave()}
 const bkHtml=()=>bks.length?`<h2>Automatic backups</h2>${bks.map(b=>`<div class="r"><button data-b="${b.id}"><b>${esc(when(b.at))}</b><span>${b.n} documents · ${esc(b.reason)}</span></button></div>`).join('')}<p style="color:var(--mut);font-size:13px">Tap a backup to restore it. Your current documents are kept.</p><button class="yl" id="bkclr" style="width:100%">Clear all backups</button>`:'';
 async function restoreBk(id){try{const rec=await tx(idb,'readonly',s=>s.get(id),BK);if(!rec)return toast('That backup could not be read.');
 if(!confirm('Restore '+rec.n+' documents from this backup? Missing documents come back. Changed ones are added as copies.'))return;
 await mkBackup('before restore',true);let a=0,c=0;
 rec.docs.forEach(d=>{const cur=docs.find(x=>x.id==d.id);if(cur&&d.id==CVID){cvMerge(cur,d);return}if(!cur){docs.push(d);a++}else if(cur.html!==d.html||cur.title!==d.title){docs.push({...d,id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),title:d.title+' (restored)',at:Date.now()});c++}});
-docs.sort((a,b)=>b.at-a.at);save();toast(a+' restored, '+c+' added as copies.');home()}catch(e){toast('Restore failed.')}}
+if(!SS.length)ssLoad();(rec.ss||[]).forEach(x=>{if(!SS.some(y=>y.id==x.id)){SS.push(x);a++}});ssSave();docs.sort((a,b)=>b.at-a.at);save();toast(a+' restored, '+c+' added as copies.');home()}catch(e){toast('Restore failed.')}}
 async function autoBackup(){try{const had=bks.length;await mkBackup('automatic');if(!had&&bks.length&&$('#bk'))home()}catch(e){}}
 let theme=localStorage.getItem(TK)||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
 const setTheme=t=>{theme=t;document.documentElement.dataset.theme=t;localStorage.setItem(TK,t);document.querySelector('meta[name=theme-color]').content=t=='dark'?'#0B1222':'#1A47C8'};setTheme(theme);
@@ -305,7 +303,7 @@ f:[['Client'],['Site / plant'],['Line / asset ID'],['Service / fluid'],['Inspect
 t:[{k:'Thickness readings',c:['CML','Description','Nominal (mm)','Previous (mm)','Current (mm)'],n:4}],
 x:'<h2>Findings and recommendations</h2><p>[Enter findings]</p><p>Next inspection date: [ ]</p><p>Inspector signature: ____________ Reviewer: ____________</p>'},
 cal:{n:'Tank calibration certificate',d:'API MPMS 2.2A · shell courses, strapping data, tape traceability',
-f:[['Tank no.'],['Owner / client'],['Location'],['Tank type','','Vertical cylindrical'],['Method','','Manual tank strapping, API MPMS 2.2A'],['Nominal capacity (m³)','number'],['Shell height (mm)','number'],['Reference gauge height (mm)','number'],['Datum plate (mm)','number'],['Strapping tape serial no.'],['Tape calibration certificate no.'],['Ambient temp (°C)','number'],['Product at calibration'],['Tilt or bulges noted'],['Calibrated by'],['Calibration date','date']],
+f:[['Tank no.'],['Owner / client'],['Location'],['Tank type','','Vertical cylindrical'],['Method','','Manual tank strapping, API MPMS 2.2A'],['Nominal capacity (m³)','number'],['Shell height (mm)','number'],['Reference gauge height (mm)','number'],['Datum plate (mm)','number'],['Strapping tape serial no.'],['Tape calibration certificate no.'],['Ambient temp (°C)','number','','neg'],['Product at calibration'],['Tilt or bulges noted'],['Calibrated by'],['Calibration date','date']],
 t:[{k:'Shell courses',c:['Course','Plate thickness (mm)','Circumference (mm)','Height (mm)'],n:6}],
 x:'<h2>Remarks</h2><p>[Enter remarks]</p><p>Capacity table: [attach]</p><p>Calibrator: ____________ Witness: ____________</p>'},
 hse:{n:'HSE toolbox talk record',d:'Hazards, controls, actions, attendee sign-in, supervisor sign-off',
@@ -314,11 +312,11 @@ t:[{k:'Follow-up actions',c:['Action','Owner','Due date'],n:3},{k:'Attendees',c:
 x:'<p>Supervisor sign-off: ____________ Date: ____________</p>'}};
 // ---- Documents list helpers
 const RN=4,SN=8,recDocs=()=>docs.filter(d=>d.id!=CVID).slice().sort((a,b)=>b.at-a.at);
-const exc=d=>{const s=String(d.html||'').slice(0,20000).replace(/<(style|script)[\s\S]*?<\/\1>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim();return s.slice(0,150)};
+const exc=d=>{if(!d.html&&!d.vh&&d.ex)return d.ex.slice(0,150);const s=String(d.html||d.vh||'').slice(0,20000).replace(/<(style|script)[\s\S]*?<\/\1>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim();return s.slice(0,150)};
 const stripCard=d=>{const x=exc(d),w=[90,70,80,50].map(n=>`<i style="width:${n}%"></i>`).join('');return `<div class="sc2"><button data-o="${d.id}" aria-label="Open ${esc(d.title)}"><div class="sth"><div class="spg">${x?esc(x):w}</div></div><div class="smt"><b>${esc(d.title)}</b><span>Edited ${ago(d.at)}</span></div></button><button class="scx" data-x="${d.id}" aria-label="Delete ${esc(d.title)}">${I(ic.x)}</button></div>`};
 const docRow=d=>`<div class="r"><button data-o="${d.id}"><b>${esc(d.title)}</b><span>Edited ${ago(d.at)}</span></button><button class="ib" data-x="${d.id}" aria-label="Delete ${esc(d.title)}">${I(ic.x)}</button></div>`;
 function bindDocs(re){document.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>open(b.dataset.o));
-document.querySelectorAll('[data-x]').forEach(b=>b.onclick=async()=>{if(confirm(idb?'Delete this document? You can recover it from Automatic backups.':'Delete this document?')){try{await mkBackup('before delete',true)}catch(e){}docs=docs.filter(d=>d.id!=b.dataset.x);save();re()}})}
+document.querySelectorAll('[data-x]').forEach(b=>b.onclick=async()=>{if(confirm(idb?'Delete this document? You can recover it from Automatic backups.':'Delete this document?')){try{await mkBackup('before delete',true)}catch(e){if(!confirm('A safety backup could not be saved because storage may be full. Delete anyway?'))return}docs=docs.filter(d=>d.id!=b.dataset.x);save();re()}})}
 function allDocs(){const L=recDocs(),d0=new Date();d0.setHours(0,0,0,0);const D=864e5,s=d0.getTime(),G=[['Today',s],['Yesterday',s-D],['Last 7 days',s-7*D],['Last 30 days',s-30*D],['Older',-1/0]],B=G.map(()=>[]);
 L.forEach(d=>{const i=G.findIndex(g=>d.at>=g[1]);B[i<0?G.length-1:i].push(d)});
 $('#app').innerHTML=`<div class="bar"><button class="ib" id="bb" aria-label="Back">${I(ic.back)}</button><h1 style="font-size:22px">All documents</h1></div>${L.length?G.map((g,i)=>B[i].length?`<h2>${g[0]} <span style="color:var(--mut);font:500 14px 'Public Sans',sans-serif">${B[i].length}</span></h2>${B[i].map(docRow).join('')}`:'').join(''):'<div class="em">No documents yet.</div>'}`;
@@ -330,7 +328,7 @@ addEventListener('touchend',e=>{if(!on)return;on=false;const t=e.changedTouches[
 /* WG-SPREADSHEETS-START */
 const icSs='<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M4 15h16M10 4v16"/>';
 // ---- Spreadsheets (offline grid, no grid library). Only .xlsx read/write lazy-loads SheetJS.
-const SSK='wg_sheets',SS_R=500,SS_C=26,SS_MB=5;let SS=[],ssCur=null,ssSel=[0,0],ssT=0;
+const SSK='wg_sheets',SS_R=500,SS_C=26,SS_MB=5;let SS=[],ssCur=null,ssSel=[0,0],ssT=0,ssMemo=new Map,ssMS=null;
 const ssCol=n=>{let s='';n++;while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=Math.floor((n-1)/26)}return s};
 const ssColN=s=>{let n=0;for(const ch of s)n=n*26+ch.charCodeAt(0)-64;return n-1};
 const ssLoad=()=>{try{SS=JSON.parse(localStorage.getItem(SSK+UK)||'[]');if(!Array.isArray(SS))SS=[]}catch(e){SS=[]}};
@@ -340,15 +338,18 @@ const ssNew=(name,rows,fm)=>{const R=Math.max(rows?rows.length:0,30),C=Math.max(
 const g=Array.from({length:Math.min(R,SS_R)},(_,r)=>Array.from({length:Math.min(C,SS_C)},(_,c)=>rows&&rows[r]&&rows[r][c]!=null?String(rows[r][c]):''));
 return{id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),name,at:Date.now(),g,fm:fm||{}}};
 // formula engine: no eval. Cells starting with = are parsed by a small recursive-descent parser.
-function ssVal(sh,r,c,seen){const g=sh.g;if(r<0||c<0||r>=g.length||c>=(g[0]||[]).length)return{e:'#REF!'};
-const raw=g[r][c]==null?'':String(g[r][c]);if(raw[0]!='=')return raw===''?{v:''}:(isFinite(raw)&&raw.trim()!==''?{v:+raw}:{v:raw});
-const k=r+','+c;seen=seen||new Set;if(seen.has(k))return{e:'#CIRC!'};seen=new Set(seen);seen.add(k);
-try{const v=ssEval(sh,raw.slice(1),seen);return typeof v=='string'&&v[0]=='#'?{e:v}:{v}}catch(x){return{e:/^#/.test(x.message)?x.message:'#ERR!'}}}
-function ssEval(sh,src,seen){const tk=[];let i=0;const re=/\s*([A-Za-z]+\d+:[A-Za-z]+\d+|[A-Za-z]+\d+|[A-Za-z]+(?=\s*\()|\d*\.?\d+|[-+*\/(),]|"[^"]*")/y;
+const ssIsNum=s=>/^\s*[-+]?(?:(?:0|[1-9]\d*)(?:\.\d+)?|\.\d+)(?:[eE][-+]?\d+)?\s*$/.test(String(s));
+const ssDt=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+function ssVal(sh,r,c,seen){if(!seen&&ssMS!==sh){ssMemo=new Map;ssMS=sh}return ssVal0(sh,r,c,seen)}
+function ssVal0(sh,r,c,seen){const g=sh.g;if(r<0||c<0||r>=g.length||c>=(g[0]||[]).length)return{e:'#REF!'};
+const raw=g[r][c]==null?'':String(g[r][c]);if(raw[0]!='=')return raw===''?{v:''}:(ssIsNum(raw)?{v:+raw}:{v:raw});
+const k=r+','+c;if(ssMemo.has(k))return ssMemo.get(k);seen=seen||new Set;if(seen.has(k))return{e:'#CIRC!'};seen=new Set(seen);seen.add(k);
+let res;try{const v=ssEval(sh,raw.slice(1),seen);res=typeof v=='string'&&v[0]=='#'?{e:v}:{v}}catch(x){res={e:/^#/.test(x.message)?x.message:'#ERR!'}}ssMemo.set(k,res);return res}
+function ssEval(sh,src,seen){const tk=[];let i=0;const re=/\s*([A-Za-z]+\d+:[A-Za-z]+\d+|[A-Za-z]+\d+|[A-Za-z]+(?=\s*\()|\d*\.?\d+|[-+*\/(),]|#REF!|"[^"]*")/y;
 while(i<src.length){re.lastIndex=i;const m=re.exec(src);if(!m){if(!src.slice(i).trim())break;throw new Error('#ERR!')}tk.push(m[1]);i=re.lastIndex}
 let p=0;const peek=()=>tk[p],next=()=>tk[p++];
 const cell=t=>{const m=/^([A-Za-z]+)(\d+)$/.exec(t);return[+m[2]-1,ssColN(m[1].toUpperCase())]};
-const num=x=>{if(x.e)throw new Error(x.e);return x.v===''?0:(typeof x.v=='number'?x.v:isFinite(x.v)?+x.v:(()=>{throw new Error('#VALUE!')})())};
+const num=x=>{if(x.e)throw new Error(x.e);return x.v===''?0:(typeof x.v=='number'?x.v:ssIsNum(x.v)?+x.v:(()=>{throw new Error('#VALUE!')})())};
 const range=t=>{const[a,b]=t.split(':'),[r1,c1]=cell(a),[r2,c2]=cell(b),o=[];for(let r=Math.min(r1,r2);r<=Math.max(r1,r2);r++)for(let c=Math.min(c1,c2);c<=Math.max(c1,c2);c++)o.push(ssVal(sh,r,c,seen));return o};
 const F={SUM:a=>a.reduce((x,y)=>x+y,0),AVERAGE:a=>{if(!a.length)throw new Error('#DIV/0!');return a.reduce((x,y)=>x+y,0)/a.length},MIN:a=>a.length?Math.min(...a):0,MAX:a=>a.length?Math.max(...a):0,COUNT:a=>a.length,ABS:a=>Math.abs(a[0]||0),ROUND:a=>{const d=Math.pow(10,a[1]||0);return Math.round((a[0]+Number.EPSILON)*d)/d}};
 function expr(){let v=term();while(peek()=='+'||peek()=='-'){const o=next(),w=term();v=o=='+'?v+w:v-w}return v}
@@ -357,7 +358,7 @@ function unary(){if(peek()=='-'){next();return-unary()}if(peek()=='+'){next();re
 function atom(){const t=next();if(t==null)throw new Error('#ERR!');
 if(t=='('){const v=expr();if(next()!=')')throw new Error('#ERR!');return v}
 if(/^\d*\.?\d+$/.test(t))return+t;
-if(t[0]=='"')throw new Error('#VALUE!');
+if(t=='#REF!')throw new Error('#REF!');if(t[0]=='"')throw new Error('#VALUE!');
 if(/^[A-Za-z]+\d+$/.test(t))return num(ssVal(sh,...cell(t),seen));
 if(/^[A-Za-z]+\d+:[A-Za-z]+\d+$/.test(t))throw new Error('#VALUE!');
 const fn=t.toUpperCase();if(!F[fn]||next()!='(')throw new Error('#NAME?');
@@ -395,8 +396,8 @@ document.querySelectorAll('[data-rn]').forEach(b=>b.onclick=()=>{const s=SS.find
 document.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{const s=SS.find(x=>x.id==b.dataset.x);if(!confirm('Delete "'+s.name+'"? This cannot be undone. Export it first if you need a copy.'))return;SS=SS.filter(x=>x!=s);ssSave();ssHome()})}
 async function ssImport(f){if(f.size>SS_MB*1048576)return toast('That file is over '+SS_MB+' MB. Split it and try again.');
 try{const buf=await f.arrayBuffer(),u=new Uint8Array(buf.slice(0,4)),isZip=u[0]==0x50&&u[1]==0x4B,nm=f.name.replace(/\.(xlsx|csv)$/i,'');let rows;
-if(isZip){if(!await ssLib())return;const wb=XLSX.read(buf,{type:'array'});if(!wb.SheetNames.length)return toast('That workbook has no sheets.');
-const ws=wb.Sheets[wb.SheetNames[0]];rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''}).map((r,i)=>r.map((c,j)=>{const a=ws[XLSX.utils.encode_cell({r:i,c:j})];return a&&a.f?'='+a.f:(c instanceof Date?c.toISOString().slice(0,10):c)}));
+if(isZip){if(!await ssLib())return;const wb=XLSX.read(buf,{type:'array',cellDates:true});if(!wb.SheetNames.length)return toast('That workbook has no sheets.');
+const ws=wb.Sheets[wb.SheetNames[0]];rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''}).map((r,i)=>r.map((c,j)=>{const a=ws[XLSX.utils.encode_cell({r:i,c:j})];return a&&a.f?'='+a.f:(c instanceof Date?ssDt(c):c)}));
 if(wb.SheetNames.length>1)toast('Opened the first sheet ("'+wb.SheetNames[0]+'") of '+wb.SheetNames.length+'.')}
 else if(/\.csv$/i.test(f.name)||/^(text\/csv|application\/vnd\.ms-excel)$/.test(f.type)){rows=ssCsvParse(new TextDecoder('utf-8').decode(buf))}
 else return toast('Choose an .xlsx or .csv file.');
@@ -406,7 +407,8 @@ if(cut)toast('Large file: showing the first '+SS_R+' rows and '+SS_C+' columns.'
 catch(e){toast('Could not read that file. It may be damaged or password protected.')}}
 function ssOpen(sh,isNew){if(!sh)return;ssCur=sh;if(isNew){SS.unshift(sh);ssSave()}ssSel=[0,0];ssDraw()}
 function ssCellTxt(sh,r,c){const v=ssVal(sh,r,c);return ssFmt(v,(sh.fm||{})[c])}
-function ssDraw(keep){const sh=ssCur,R=sh.g.length,C=sh.g[0].length,[sr,sc]=ssSel;
+const ssRefresh=()=>{ssMS=null;document.querySelectorAll('#ssg td[data-r]').forEach(td=>{const r=+td.dataset.r,c=+td.dataset.c,v=ssVal(ssCur,r,c);td.textContent=ssFmt(v,(ssCur.fm||{})[c]);td.style.textAlign=v&&typeof v.v=='number'?'right':''})};
+function ssDraw(keep){ssMS=null;const sh=ssCur,R=sh.g.length,C=sh.g[0].length,[sr,sc]=ssSel;
 $('#app').innerHTML=`<div class="bar"><button class="ib" id="bb" aria-label="Back to spreadsheets">${I(ic.back)}</button><h1 style="font-size:20px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="ssn">${esc(sh.name)}</h1><button class="ib" id="sxp" aria-label="Export">${I(ic.bk)}</button></div>
 <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px"><b id="ssa" style="min-width:42px;text-align:center">${ssCol(sc)}${sr+1}</b><input id="ssf" aria-label="Cell value or formula" style="flex:1;min-width:0" value="${esc(sh.g[sr][sc])}" placeholder="Type a value, or =SUM(A1:A5)"></div>
 <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:6px"><button class="sec" id="ar">+ Row</button><button class="sec" id="ac">+ Column</button><button class="sec" id="dr">- Row</button><button class="sec" id="dc">- Column</button><button class="sec" id="ft">Format</button></div>
@@ -414,13 +416,13 @@ $('#app').innerHTML=`<div class="bar"><button class="ib" id="bb" aria-label="Bac
 $('#bb').onclick=()=>{clearTimeout(ssT);ssSave();ssHome()};
 $('#ssn').onclick=()=>{const n=prompt('Rename spreadsheet',sh.name);if(n&&n.trim()){sh.name=n.trim().slice(0,80);ssSoon();$('#ssn').textContent=sh.name}};
 $('#ssg').onclick=e=>{const td=e.target.closest('td');if(!td)return;ssSel=[+td.dataset.r,+td.dataset.c];ssDraw()};
-const fi=$('#ssf');fi.onchange=()=>{sh.g[ssSel[0]][ssSel[1]]=fi.value;ssSoon();ssDraw()};fi.onkeydown=e=>{if(e.key=='Enter'){fi.blur();fi.onchange();if(ssSel[0]<sh.g.length-1){ssSel=[ssSel[0]+1,ssSel[1]];ssDraw()}}};
+const fi=$('#ssf');fi.onchange=()=>{sh.g[ssSel[0]][ssSel[1]]=fi.value;ssSoon();ssRefresh()};fi.onkeydown=e=>{if(e.key=='Enter'){fi.blur();fi.onchange();if(ssSel[0]<sh.g.length-1){ssSel=[ssSel[0]+1,ssSel[1]];ssDraw()}}};
 $('#ar').onclick=()=>{if(sh.g.length>=SS_R)return toast('Limit is '+SS_R+' rows.');ssShift(sh,0,ssSel[0]+1,1);sh.g.splice(ssSel[0]+1,0,Array(C).fill(''));ssSoon();ssDraw()};
 $('#ac').onclick=()=>{if(C>=SS_C)return toast('Limit is '+SS_C+' columns.');ssShift(sh,1,ssSel[1]+1,1);sh.g.forEach(r=>r.splice(ssSel[1]+1,0,''));ssSoon();ssDraw()};
 $('#dr').onclick=()=>{if(R<2)return toast('A sheet needs at least one row.');if(!confirm('Delete row '+(ssSel[0]+1)+'?'))return;ssShift(sh,0,ssSel[0],-1);sh.g.splice(ssSel[0],1);ssSel[0]=Math.min(ssSel[0],sh.g.length-1);ssSoon();ssDraw()};
 $('#dc').onclick=()=>{if(C<2)return toast('A sheet needs at least one column.');if(!confirm('Delete column '+ssCol(ssSel[1])+'?'))return;ssShift(sh,1,ssSel[1],-1);sh.g.forEach(r=>r.splice(ssSel[1],1));ssSel[1]=Math.min(ssSel[1],sh.g[0].length-1);ssSoon();ssDraw()};
 $('#ft').onclick=()=>{const set=f=>()=>{sh.fm=sh.fm||{};if(f)sh.fm[ssSel[1]]=f;else delete sh.fm[ssSel[1]];ssSoon();ssDraw()};sheet('Format column '+ssCol(ssSel[1]),[['General','Plain numbers',set('')],['Number 0','1,235',set('n0')],['Number 0.00','1,234.57',set('n2')],['Percent','12.3%',set('pc')],['Text','Show exactly as typed',set('tx')]])};
-$('#sxp').onclick=()=>sheet('Export "'+sh.name+'"',[['Excel (.xlsx)','Opens in Excel, Google Sheets, Numbers',()=>ssXlsx(sh),1],['CSV (.csv)','Values only, opens anywhere',()=>dl(new Blob(['\uFEFF'+ssCsvOut(ssTrimSh(sh))],{type:'text/csv'}),ssSafe(sh.name)+'.csv')],['PDF (.pdf)','Print-ready pages',()=>ssPdf(sh)]]);
+$('#sxp').onclick=()=>sheet('Export "'+esc(sh.name)+'"',[['Excel (.xlsx)','Opens in Excel, Google Sheets, Numbers',()=>ssXlsx(sh),1],['CSV (.csv)','Values only, opens anywhere',()=>dl(new Blob(['\uFEFF'+ssCsvOut(ssTrimSh(sh))],{type:'text/csv'}),ssSafe(sh.name)+'.csv')],['PDF (.pdf)','Print-ready pages',()=>ssPdf(sh)]]);
 const a=document.querySelector('td[data-r="'+sr+'"][data-c="'+sc+'"]');if(a&&!keep)a.scrollIntoView({block:'nearest',inline:'nearest'})}
 const ssTrimSh=sh=>({g:ssTrim(sh.g),fm:sh.fm});
 async function ssXlsx(sh){if(!await ssLib())return;try{const g=ssTrim(sh.g),ws={},fmts={n0:'#,##0',n2:'#,##0.00',pc:'0.0%'};let mr=0,mc=0;
@@ -472,7 +474,7 @@ $('#bb').onclick=tplHome;
 document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>$('#tb'+b.dataset.a).insertAdjacentHTML('beforeend',row(t.t[b.dataset.a].c)));
 $('#go').onclick=()=>{document.querySelectorAll('[aria-invalid]').forEach(x=>{x.removeAttribute('aria-invalid');x.style.borderColor=''});const er=[],bad=el=>{el.setAttribute('aria-invalid','true');el.style.borderColor='#C62828'};
 (t.r||[]).forEach(i=>{const el=$('#f'+i);if(!el.value.trim()){er.push(t.f[i][0]+' is required.');bad(el)}});
-t.f.forEach(([l,ty],i)=>{const el=$('#f'+i);if(ty=='number'&&el.value!==''&&(!isFinite(+el.value)||+el.value<0)){er.push(l+' must be a positive number.');bad(el)}});
+t.f.forEach(([l,ty],i)=>{const el=$('#f'+i);if(ty=='number'&&el.value!==''&&(!isFinite(+el.value)||(+el.value<0&&t.f[i][3]!='neg'))){er.push(l+' must be a positive number.');bad(el)}});
 if(k=='ut'&&$('#f12').value&&$('#f13').value&&new Date($('#f13').value)<=new Date($('#f12').value)){er.push('Current survey date must be after the previous survey date.');bad($('#f13'))}
 t.t.forEach((tb,j)=>(tb.num||[]).forEach(c=>[...$('#tb'+j).querySelectorAll('tr')].slice(1).forEach(r=>{const el=r.querySelectorAll('input')[c];if(el&&el.value!==''&&(!isFinite(+el.value)||+el.value<0)){er.push(tb.c[c]+' must be a positive number.');bad(el)}})));
 $('#er').innerHTML=[...new Set(er)].map(esc).join('<br>');if(er.length){const f=document.querySelector('[aria-invalid]');f&&f.focus();return}
@@ -492,7 +494,7 @@ f:[['Date','date'],['Time','time'],['Location'],['Report type','','Near miss'],[
 t:[{k:'Corrective actions',c:['Action','Owner','Due date','Status'],n:3}],
 x:'<p>Reporter: ____________ Supervisor: ____________ HSE officer: ____________</p>',r:[0,2,4,7]};
 T.ucal={n:'UT instrument calibration record',d:'Probe, block, velocity, zero offset · checks with pass / fail',
-f:[['Date','date'],['Technician'],['Instrument'],['Instrument serial no.'],['Probe / frequency (MHz)'],['Probe serial no.'],['Calibration block'],['Block material'],['Sound velocity (m/s)','number'],['Zero offset (µs)','number'],['Couplant'],['Tolerance (± mm)','number','0.10']],
+f:[['Date','date'],['Technician'],['Instrument'],['Instrument serial no.'],['Probe / frequency (MHz)'],['Probe serial no.'],['Calibration block'],['Block material'],['Sound velocity (m/s)','number'],['Zero offset (µs)','number','','neg'],['Couplant'],['Tolerance (± mm)','number','0.10']],
 t:[{k:'Thickness checks',c:['Reference (mm)','Measured (mm)'],n:5,num:[0,1],xc:['Difference (mm)','Result'],
 calc:(r,v)=>{const a=parseFloat(r[0]),b=parseFloat(r[1]),tol=parseFloat(v[11]);if(isNaN(a)||isNaN(b))return['',''];const d=b-a;return[(Math.abs(d)<.005?0:d).toFixed(2),isNaN(tol)?'':Math.abs(d)<=tol+1e-9?'Pass':'Fail']}}],
 x:'<p>Overall result: Pass / Fail</p><p>Technician: ____________ Reviewer: ____________</p>',r:[0,1,2,3,6]};
@@ -583,7 +585,6 @@ $('#cvb').onclick=async()=>{if(c.built!=null&&!c.ed){clearTimeout(ct);save();ret
 if(c.ed&&!confirm('Rebuild the CV page? Changes you typed directly on the page will be replaced.'))return;
 if(c.ed){try{await mkBackup('before CV rebuild',true)}catch(e){}}
 c.ed=0;d.html=c.built=cvHtml(c);d.at=Date.now();save();open(CVID)}}
-const cvTile=()=>{const d=docs.find(x=>x.id==CVID),n=d&&d.cv&&d.cv.jobs?d.cv.jobs.length:0;return n?n+' job'+(n==1?'':'s')+' logged · keep it up to date':'Profile, certificates and job log'};
 // ---- Editor toolbar (tabs, text size, colors)
 const SZ=[8,9,10,10.5,11,12,14,16,18,20,24,28,32,36,48,60,72],BASE=10.5,fpt=v=>{v=String(v||'');const n=parseFloat(v);return !n?0:/px$/.test(v)?n*.75:n},fmt=v=>String(Math.round(v*2)/2);
 const nxt=(c,d)=>{if(d>0){const n=SZ.find(x=>x>c+.01);return n||SZ[SZ.length-1]}const l=SZ.filter(x=>x<c-.01);return l.length?l[l.length-1]:SZ[0]};
@@ -594,7 +595,7 @@ const TT_T=[
 ['c','Color',['Text',...sws('col',TC,'Text color'),'Highlight',...sws('bg',HC,'Highlight'),['None','bg:none','Remove highlight']]],
 ['p','Paragraph',[['Normal','p'],['H1','h1','Heading 1'],['H2','h2','Heading 2'],['H3','h3','Heading 3'],['\u2022','insertUnorderedList','Bulleted list'],['1.','insertOrderedList','Numbered list'],['Quote','q','Quote'],['Left','jl','Align left'],['Center','jc','Align center'],['Right','jr','Align right']]],
 ['i','Insert',[['Table','tbl','Insert table'],['+Row','ar','Add row'],['+Col','ac','Add column'],['\u2212Row','dr','Delete row'],['\u2212Col','dc','Delete column'],['Del table','dt','Delete table'],['Line','hr','Horizontal line']]]];
-const TW_T=[['t','Text',[...TT_T[0][2],['x\u00b2','sup','Superscript'],['x\u2082','sub','Subscript']]],TT_T[1],['p','Paragraph',[['Normal','p'],['H1','h1','Heading 1'],['H2','h2','Heading 2'],['\u2022','insertUnorderedList','Bulleted list'],['1.','insertOrderedList','Numbered list'],['Left','jl','Align left'],['Center','jc','Align center'],['Right','jr','Align right'],['Indent','ind'],['Outdent','out'],['Justify','jf','Justify'],['Line','hr','Horizontal line']]],['i','Insert',[['Link','link','Insert link'],['Image','img','Insert picture']]]];
+const TW_T=[['t','Text',[...TT_T[0][2],['x\u00b2','sup','Superscript'],['x\u2082','sub','Subscript']]],TT_T[1],['p','Paragraph',[['Normal','p'],['H1','h1','Heading 1'],['H2','h2','Heading 2'],['\u2022','insertUnorderedList','Bulleted list'],['1.','insertOrderedList','Numbered list'],['Left','jl','Align left'],['Center','jc','Align center'],['Right','jr','Align right'],['Indent','ind'],['Outdent','out'],['Justify','jf','Justify'],['Line','hr','Horizontal line']]],['i','Insert',[['Table','tbl','Insert table'],['Link','link','Insert link'],['Image','img','Insert picture']]]];
 const tbUi=(T,a)=>`<div class="tt" role="tablist">${T.map(([id,l],i)=>`<button role="tab" data-tab="${id}" aria-selected="${i==0}">${l}</button>`).join('')}<span class="sp"></span><button data-${a}="undo" aria-label="Undo">&#8630;</button><button data-${a}="redo" aria-label="Redo">&#8631;</button></div>${T.map(([id,l,it],i)=>`<div class="tb" role="toolbar" data-pn="${id}" aria-label="${l}"${i?' hidden':''}>${it.map(x=>typeof x=='string'?(x=='sz'?'<span class="lb" id="szl">'+fmt(BASE)+'</span>':`<span class="lb">${x}</span>`):x[3]?`<button class="sw" data-${a}="${x[1]}" aria-label="${x[2]}"><span style="background:${x[3]}"></span></button>`:`<button data-${a}="${x[1]}" aria-label="${x[2]||x[0]}">${x[0]}</button>`).join('')}</div>`).join('')}`;
 function tbTabs(){document.querySelectorAll('[data-tab]').forEach(b=>{b.onmousedown=e=>e.preventDefault();b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.setAttribute('aria-selected',x===b));document.querySelectorAll('[data-pn]').forEach(p=>p.hidden=p.dataset.pn!=b.dataset.tab)}})}
 function tbTiptap(ed){tbTabs();
@@ -606,7 +607,7 @@ if(k.startsWith('bg:')){const v=k.slice(3);return c.setTS({bg:v=='none'?null:v})
 if(CM[k])CM[k](c).run()};
 const A={bold:'bold',italic:'italic',underline:'underline',strike:'strike',insertUnorderedList:'bulletList',insertOrderedList:'orderedList',q:'blockquote'};
 const rf=()=>{document.querySelectorAll('[data-c]').forEach(b=>{const k=b.dataset.c;let on=false;try{if(A[k])on=ed.isActive(A[k]);else if(/^h[1-3]$/.test(k))on=ed.isActive('heading',{level:+k[1]});else if(k=='jc')on=ed.isActive({textAlign:'center'});else if(k=='jr')on=ed.isActive({textAlign:'right'});else if(k=='jl')on=!ed.isActive({textAlign:'center'})&&!ed.isActive({textAlign:'right'})}catch(e){}b.setAttribute('aria-pressed',on)});const z=$('#szl');if(z)z.textContent=fmt(cs())};
-document.querySelectorAll('[data-c]').forEach(b=>b.onmousedown=e=>{e.preventDefault();run(b.dataset.c)});
+document.querySelectorAll('[data-c]').forEach(b=>{b.onmousedown=e=>e.preventDefault();b.onclick=()=>run(b.dataset.c)});
 ed.on('transaction',rf);rf()}
 function tbWord(pg,sv){tbTabs();
 const ex=(c,v,css)=>{pg.focus();document.execCommand('styleWithCSS',false,!!css);document.execCommand(c,false,v)};
@@ -618,15 +619,15 @@ if(s.isCollapsed){const k=b.closest('p,li,h1,h2,h3,h4,td,th,div');if(!k||k==pg)r
 else{ex('fontSize','7',1);pg.querySelectorAll('font[size="7"],span[style*="xxx-large"]').forEach(f=>{if(f.tagName=='FONT'){const sp=document.createElement('span');sp.innerHTML=f.innerHTML;f.replaceWith(sp);sp.style.fontSize=n+'pt'}else f.style.fontSize=n+'pt'})}
 sv();lbl()};
 const rs=r=>{if(r){const q=getSelection();q.removeAllRanges();q.addRange(r)}},cr=()=>{const q=getSelection();return q&&q.rangeCount&&pg.contains(q.anchorNode)?q.getRangeAt(0).cloneRange():null};
-const W={sup:()=>ex('superscript'),sub:()=>ex('subscript'),jf:()=>ex('justifyFull'),
+const W={tbl:()=>{const c='<td style="border:1px solid #999;padding:5px;min-width:60px">&nbsp;</td>',r='<tr>'+c+c+c+'</tr>';ex('insertHTML','<table style="border-collapse:collapse;width:100%">'+r+r+r+'</table><p><br></p>')},sup:()=>ex('superscript'),sub:()=>ex('subscript'),jf:()=>ex('justifyFull'),
 link:()=>{const r=cr();if(!r||r.collapsed)return toast('Select the text to link first.');const u=(prompt('Link address','https://')||'').trim();if(!u)return;if(!/^(https?:\/\/|mailto:|tel:)/i.test(u))return toast('The link must start with https://');rs(r);ex('createLink',u)},
 img:()=>{const r=cr();pick('image/*',0,async f=>{try{const i=await imgEl(f),k=Math.min(1,1000/i.naturalWidth),c=document.createElement('canvas');c.width=Math.round(i.naturalWidth*k);c.height=Math.round(i.naturalHeight*k);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(i,0,0,c.width,c.height);rs(r);ex('insertImage',c.toDataURL('image/jpeg',.85));pg.querySelectorAll('img:not([style])').forEach(m=>m.style.maxWidth='100%');sv()}catch(e){toast('Could not insert that picture.')}})},
 bold:()=>ex('bold'),italic:()=>ex('italic'),underline:()=>ex('underline'),strike:()=>ex('strikeThrough'),clear:()=>ex('removeFormat'),p:()=>ex('formatBlock','p'),h1:()=>ex('formatBlock','h1'),h2:()=>ex('formatBlock','h2'),insertUnorderedList:()=>ex('insertUnorderedList'),insertOrderedList:()=>ex('insertOrderedList'),jl:()=>ex('justifyLeft'),jc:()=>ex('justifyCenter'),jr:()=>ex('justifyRight'),ind:()=>ex('indent'),out:()=>ex('outdent'),hr:()=>ex('insertHorizontalRule'),undo:()=>ex('undo'),redo:()=>ex('redo')};
-document.querySelectorAll('[data-w]').forEach(b=>b.onmousedown=e=>{e.preventDefault();const k=b.dataset.w;
+document.querySelectorAll('[data-w]').forEach(b=>{b.onmousedown=e=>e.preventDefault();b.onclick=()=>{const k=b.dataset.w;
 if(k=='sizeDn'||k=='sizeUp')return size(k=='sizeUp'?1:-1);
 if(k.startsWith('col:')){ex('foreColor',k.slice(4),1);return sv()}
 if(k.startsWith('bg:')){const v=k.slice(3);ex('hiliteColor',v=='none'?'transparent':v,1);return sv()}
-if(W[k]){W[k]();sv();lbl()}});
+if(W[k]){W[k]();sv();lbl()}}});
 const Q={bold:'bold',italic:'italic',underline:'underline',strike:'strikeThrough',insertUnorderedList:'insertUnorderedList',insertOrderedList:'insertOrderedList',jl:'justifyLeft',jc:'justifyCenter',jr:'justifyRight'};
 const rf=()=>{if(!$('#szl'))return;if(!base())return;document.querySelectorAll('[data-w]').forEach(b=>{const q=Q[b.dataset.w];if(!q)return;let on=false;try{on=document.queryCommandState(q)}catch(e){}b.setAttribute('aria-pressed',on)});lbl()};
 if(window.__wsel)document.removeEventListener('selectionchange',window.__wsel);window.__wsel=rf;document.addEventListener('selectionchange',rf)}
@@ -646,7 +647,6 @@ $('#sv').onclick=()=>{clearTimeout(st);cur.html=html();cur.title=$('#ti').value|
 async function imgpdf(pg,n,w){toast('Creating PDF...');try{if(window.PDFLib){const e=document.createElement('div');e.innerHTML=(pg.querySelector('.ProseMirror')||pg).innerHTML;const b=await vecPdf(e);if(b)return dl(b,n+'.pdf')}}catch(x){}imgpdfRaster(pg,n,w)}
 function imgpdfRaster(pg,n,w){toast('Creating PDF...');if(!window.html2pdf)return toast('PDF export needs the library to load once online.');const pm=pg.querySelector('.ProseMirror');
 h2pBlob(pm?pm.innerHTML:pg.innerHTML,w||703).then(b=>dl(b,n+'.pdf')).catch(async()=>{try{if(!window.PDFLib)throw 0;await dl(await textPdf(pg),n+'.pdf');toast('Exported as a text-only PDF (pictures and layout not included).')}catch(e){toast('PDF export failed. Save, reopen the document and try again.')}})}
-const prt=n=>{const t=document.title;document.title=n;addEventListener('afterprint',()=>document.title=t,{once:true});print()};
 const IB=p=>I(p).replace('width="22" height="22"','width="46" height="46"').replace('stroke-width="1.9"','stroke-width="2.3"');
 const icMail='<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',icWa='<path d="M4 20l1.3-4.2A8 8 0 1 1 8.4 18.8z"/><path d="M9 9c0 3 3 6 6 6l1-1.5-2-1-1 .8c-1-.4-2-1.4-2.4-2.4l.8-1-1-2z"/>',icWd='<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M8.5 12l1.5 5 2-4 2 4 1.5-5"/>',icPdf='<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M8 17v-5h2a1.5 1.5 0 0 1 0 3H8"/>',icArr='<path d="M4 8h14l-3-3M20 16H6l3 3"/>';
 function sheet(t,o){const e=document.createElement('div');e.className='sh';e.innerHTML='<div role="dialog" aria-modal="true" aria-label="'+t+'"><b>'+t+'</b>'+o.map((x,i)=>`<button data-i="${i}" class="${x[3]?'y':''}">${x[0]}<br><small style="font-weight:400">${x[1]}</small></button>`).join('')+'<button data-i="x">Cancel</button></div>';e.onclick=ev=>{const b=ev.target.closest('button');if(ev.target==e||(b&&b.dataset.i=='x'))e.remove();else if(b){e.remove();o[b.dataset.i][2]()}};e.onkeydown=ev=>{if(ev.key=='Escape')e.remove()};document.body.appendChild(e);const f=e.querySelector('button');f&&f.focus()}
@@ -697,7 +697,7 @@ const tk=[];inl(n,{},tk);if(tk.some(k=>k.t&&k.t.trim()||k.img))await para(tk,x,w
 for(const c of root.childNodes)await blk(c,M,CW,11);
 const ps=out.getPages(),fo=F['000'];ps.forEach((p,i)=>p.drawText((i+1)+' / '+ps.length,{x:W/2-14,y:24,size:9,font:fo,color:P.rgb(.5,.5,.5)}));
 if(bad)return null;return new Blob([await out.save()],{type:'application/pdf'})}
-const wordDoc=root=>{const D=docx,bk=/^(P|DIV|H[1-6]|TABLE|UL|OL|BLOCKQUOTE|PRE|HR)$/;let ni=0;
+const wordDoc=root=>{const D=docx,bk=/^(P|DIV|H[1-6]|TABLE|UL|OL|BLOCKQUOTE|PRE|HR|SECTION|ARTICLE|HEADER|FOOTER)$/;let ni=0;
 const hx=c=>{if(!c)return 0;const m=String(c).match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/);if(m)return m[4]!==undefined&&+m[4]===0?0:[1,2,3].map(i=>(+m[i]).toString(16).padStart(2,'0')).join('').toUpperCase();if(/^#[0-9a-f]{6}$/i.test(c))return c.slice(1).toUpperCase();if(/^#[0-9a-f]{3}$/i.test(c))return[...c.slice(1)].map(x=>x+x).join('').toUpperCase();return 0};
 const al=n=>{const a=(n.style&&n.style.textAlign)||(n.getAttribute&&n.getAttribute('align'))||'';return({left:'left',center:'center',right:'right',justify:'both'})[a]};
 const tw=v=>{const n=parseFloat(v);return n?Math.round(/pt$/.test(v)?n*20:n*15):0};
@@ -714,7 +714,7 @@ return[new D.Paragraph({numbering:{reference:o?'wgn':'wgb',level:Math.min(lv,2),
 const cell=c=>{const th=c.tagName=='TH',bg=hx(c.style&&c.style.backgroundColor),kids=[...c.childNodes],bl=kids.some(k=>k.nodeType==1&&bk.test(k.tagName)),ch=bl?kids.flatMap(blk):[new D.Paragraph({alignment:al(c),children:run(c)})],cs=+c.getAttribute('colspan')||1,rs=+c.getAttribute('rowspan')||1;
 return new D.TableCell({columnSpan:cs>1?cs:undefined,rowSpan:rs>1?rs:undefined,shading:bg?{fill:bg}:th?{fill:'E6EDFF'}:undefined,margins:{top:40,bottom:40,left:80,right:80},children:ch.length?ch:[new D.Paragraph('')]})};
 const blk=n=>{if(n.nodeType==3)return n.textContent.trim()?[new D.Paragraph({children:run(n)})]:[];if(n.nodeType!=1)return[];const t=n.tagName,a=al(n),ind=tw(n.style&&n.style.marginLeft);
-if(/^(STYLE|SCRIPT)$/.test(t))return[];
+if(/^(STYLE|SCRIPT|HEADER|FOOTER)$/.test(t))return[];
 if(t=='IMG')return[new D.Paragraph({alignment:a,children:img(n)})];
 if(/^H[1-6]$/.test(t))return[new D.Paragraph({heading:D.HeadingLevel['HEADING_'+t[1]],alignment:a,children:run(n)})];
 if(t=='TABLE'){const rows=[...n.rows].map((r,i)=>new D.TableRow({tableHeader:i==0&&[...r.cells].every(c=>c.tagName=='TH'),cantSplit:true,children:[...r.cells].map(cell)}));return rows.length?[new D.Table({width:{size:100,type:D.WidthType.PERCENTAGE},rows}),new D.Paragraph('')]:[]}
@@ -739,7 +739,8 @@ const WNS='http://schemas.openxmlformats.org/wordprocessingml/2006/main',nt=t=>(
 let PT=false;try{const t=document.createElement('div');t.contentEditable='plaintext-only';PT=t.contentEditable=='plaintext-only'}catch(e){}
 async function wLoad(d){const z=await JSZip.loadAsync(unb64(d.src));return{z,xml:new DOMParser().parseFromString(await z.file('word/document.xml').async('string'),'application/xml')}}
 const xps=x=>[...x.getElementsByTagNameNS(WNS,'p')],xtx=p=>[...p.getElementsByTagNameNS(WNS,'t')].map(t=>t.textContent).join('');
-function setT(p,t){const w=document.createTreeWalker(p,4),a=[];while(w.nextNode())a.push(w.currentNode);if(a.length){a.forEach((n,k)=>n.nodeValue=k?'':t)}else p.textContent=t}
+/*PR-START*/function patchRuns(ts,get,set,o,n){let p=0;const m=Math.min(o.length,n.length);while(p<m&&o[p]===n[p])p++;let s=0;while(s<m-p&&o[o.length-1-s]===n[n.length-1-s])s++;const d0=p,d1=o.length-s,ins=n.slice(p,n.length-s),L=ts.map(get);let a=0,ti=-1;L.forEach((t,i)=>{const b=a+t.length;if(ti<0&&(d1>d0?b>d0:(b>=d0&&(a<d0||d0==0))))ti=i;a=b});if(ti<0)ti=ts.length-1;a=0;ts.forEach((nd,i)=>{const t=L[i],b=a+t.length;let v=t;const x=Math.max(d0,a),y=Math.min(d1,b);if(x<y)v=t.slice(0,x-a)+t.slice(y-a);if(i==ti){const k=Math.min(Math.max(d0,a)-a,v.length);v=v.slice(0,k)+ins+v.slice(k)}set(nd,v);a=b})}/*PR-END*/
+function setT(p,t){const w=document.createTreeWalker(p,4),a=[];while(w.nextNode())a.push(w.currentNode);if(a.length)patchRuns(a,n=>n.nodeValue,(n,v)=>n.nodeValue=v,a.map(n=>n.nodeValue).join(''),t);else p.textContent=t}
 function wMap(pg,xml){const ds=[...pg.querySelectorAll('article p')],xs=xps(xml);
 if(ds.length==xs.length)ds.forEach((p,i)=>{const a=nt(p.textContent),b=nt(xtx(xs[i]));if(a==b)p.dataset.wi=i});
 else{let k=0;ds.forEach(p=>{const a=nt(p.textContent);if(!a)return;for(let m=k;m<xs.length;m++)if(nt(xtx(xs[m]))==a){p.dataset.wi=m;k=m+1;break}})}}
@@ -750,7 +751,7 @@ async function fidelity(d){try{const z=(await wLoad(d)).z,x=await z.file('word/d
 t(/<w:(ins|del|moveFrom|moveTo)\s/,'tracked changes');t(/<w:txbxContent/,'text boxes');t(/<w:instrText/,'fields such as page numbers or contents tables');t(/<m:oMath/,'equations');t(/<w:commentReference/,'comments');t(/<w:(footnote|endnote)Reference/,'footnotes');t(/<w:cols [^>]*w:num="[2-9]/,'multiple columns');t(/<dgm:|drawingml\/2006\/diagram/,'SmartArt diagrams');return L}catch(e){return[]}}
 async function wExport(d){const{z,xml}=await wLoad(d),xs=xps(xml);
 Object.entries(d.tx||{}).forEach(([i,t])=>{const p=xs[i];if(!p)return;const ts=[...p.getElementsByTagNameNS(WNS,'t')],X='http://www.w3.org/XML/1998/namespace';
-if(ts.length){ts.forEach((n,k)=>n.textContent=k?'':t);ts[0].setAttributeNS(X,'xml:space','preserve')}
+if(ts.length){patchRuns(ts,n=>n.textContent,(n,v)=>n.textContent=v,ts.map(n=>n.textContent).join(''),t);ts.forEach(n=>n.setAttributeNS(X,'xml:space','preserve'))}
 else{const r=xml.createElementNS(WNS,'w:r'),n=xml.createElementNS(WNS,'w:t');n.setAttributeNS(X,'xml:space','preserve');n.textContent=t;r.appendChild(n);p.appendChild(r)}});
 z.file('word/document.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'+new XMLSerializer().serializeToString(xml));
 return z.generateAsync({type:'blob',mimeType:DOCX_MIME,compression:'DEFLATE'})}
@@ -763,6 +764,7 @@ ${imp?'<p class="hint">Text editing only: tap any text to change it. Layout, tab
 <div class="pg wv" id="pg"${imp?'':' contenteditable="true" spellcheck="true"'}></div><div class="act"><button id="sv">Save</button><button id="ew">Export Word</button><button class="y" id="ep">Export PDF</button></div>`;
 const pg=$('#pg');let st;if(imp)fidelity(d).then(l=>{if(l.length&&$('#pg'))pg.insertAdjacentHTML('beforebegin','<p class="er" role="alert">This file contains '+l.join(', ')+'. They are kept as in your original, but text inside them may not be editable here. Check the result in Word before sending.</p>')});
 try{if(!imp&&d.vh)pg.innerHTML=d.vh;else await wShow(d,pg,1)}catch(e){pg.textContent='';toast('Word layout needs the library to load once online.')}
+if(imp&&pg.textContent.trim())d.ex=nt(pg.textContent).slice(0,1500);
 const sv=()=>{clearTimeout(st);st=setTimeout(()=>{d.title=$('#ti').value||'Untitled';if(imp){const tx={};pg.querySelectorAll('[data-wi]').forEach(p=>{if(nt(p.textContent)!=p.dataset.o)tx[p.dataset.wi]=p.textContent});d.tx=tx}else if(pg.firstChild){d.vh=pg.innerHTML;d.ed=1}d.at=Date.now();save()},400)};
 pg.oninput=sv;$('#ti').oninput=()=>{d.title=$('#ti').value||'Untitled';d.at=Date.now();save()};
 if(imp){pg.addEventListener('keydown',e=>{if(e.key=='Enter')e.preventDefault()});pg.addEventListener('paste',e=>{e.preventDefault();document.execCommand('insertText',false,(e.clipboardData.getData('text')||'').replace(/\s*\n\s*/g,' '))});pg.addEventListener('drop',e=>e.preventDefault())}
@@ -794,10 +796,7 @@ const sy=window.scrollY,sx=window.scrollX,o=PDFO(w);o.html2canvas.scrollX=0;o.ht
 try{return await html2pdf().set(o).from(c).outputPdf('blob')}finally{wrap.remove();window.scrollTo(sx,sy)}}
 async function mkPdf(d){const c=document.createElement('div');c.className=d.src?'cnv':'ex';const w=d.src?834:703;c.style.cssText=d.src?'position:absolute;left:0;top:0;z-index:-1;pointer-events:none':'position:fixed;left:-9999px;top:0;width:'+w+'px';document.body.appendChild(c);
 try{if(d.src){if(!d.imp&&d.vh)c.innerHTML=d.vh;else await wShow(d,c,0);await new Promise(r=>setTimeout(r,250));return await secPdf(c)}return await h2pBlob(d.html,w)}finally{c.remove()}}
-const dtext=d=>{const e=document.createElement('div');e.innerHTML=d.html||d.vh||'';e.querySelectorAll('style').forEach(x=>x.remove());return(e.textContent||'').replace(/\s+/g,' ').trim().slice(0,1200)};
-async function sendFile(d,kind){if(!navigator.onLine)return toast('No internet connection. Connect to send.');
-try{toast('Preparing '+(kind=='pdf'?'PDF':'Word file')+'...');const n=(d.title||'document').replace(/[^\w\- ]+/g,'')||'document';
-const b=kind=='pdf'?await mkPdf(d):await wordBlob(d);await dl(b,n+(kind=='pdf'?'.pdf':'.docx'))}catch(e){toast('Could not prepare the file.')}}
+const dtext=d=>{if(!d.html&&!d.vh&&d.ex)return d.ex.slice(0,1200);const e=document.createElement('div');e.innerHTML=d.html||d.vh||'';e.querySelectorAll('style').forEach(x=>x.remove());return(e.textContent||'').replace(/\s+/g,' ').trim().slice(0,1200)};
 const shName=d=>(d.title||'document').replace(/[^\w\- ]+/g,'').trim()||'document';
 const saveBlob=(b,n)=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=n;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),60000)};
 const shBody=(d,max)=>{let t=dtext(d);if(!t)return'Please find "'+d.title+'" attached.';return t.length>max?t.slice(0,max).replace(/\s+\S*$/,'')+'...':t};
@@ -840,7 +839,6 @@ document.body.appendChild(e);e.querySelector('#sh_to').focus()}
 async function sendFile(d,kind){if(!navigator.onLine)return toast('No internet connection. Connect to send.');
 try{toast('Preparing '+(kind=='pdf'?'PDF':'Word file')+'...');const n=shName(d);
 const b=kind=='pdf'?await mkPdf(d):await wordBlob(d);await dl(b,n+(kind=='pdf'?'.pdf':'.docx'))}catch(e){toast('Could not prepare the file.')}}
-function shareDoc(d){sheet('Share "'+esc(d.title)+'"',[['Send as PDF','Pick WhatsApp, email, Drive or any app',()=>sendFile(d,'pdf'),1],['Send as Word (.docx)','Editable copy through any app',()=>sendFile(d,'docx')],['Email','Add an address, attach PDF or Word',()=>shareAsk(d,'mail')],['WhatsApp','Add a number, attach PDF or Word',()=>shareAsk(d,'wa')]])}
 function shareHome(){
 $('#app').innerHTML=`<div class="bar"><button class="ib" id="bb" aria-label="Back">${I(ic.back)}</button><h1 style="font-size:22px">Share</h1></div><div class="tg"><button class="t" data-k="pdf" aria-label="Send as PDF">${IB(icPdf)}<b>PDF</b></button><button class="t" data-k="docx" aria-label="Send as Word">${IB(icWd)}<b>Word</b></button><button class="t" data-k="mail" aria-label="Email">${IB(icMail)}<b>Email</b></button><button class="t" data-k="wa" aria-label="WhatsApp">${IB(icWa)}<b>WhatsApp</b></button></div><p class="hint">Email and WhatsApp let you add a recipient and attach the document as a PDF or Word file, or send just the text.</p>`;
 $('#bb').onclick=home;document.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>sharePick(b.dataset.k))}
@@ -861,12 +859,13 @@ function pick(acc,multi,cb){const i=document.createElement('input');i.type='file
 async function rasterPages(buf,out){pdfjsLib.GlobalWorkerOptions.workerSrc=WK;const pdf=await openPdf(new Uint8Array(buf.slice(0)));
 for(let i=1;i<=pdf.numPages;i++){const pg=await pdf.getPage(i),v1=pg.getViewport({scale:1}),v=pg.getViewport({scale:2}),c=document.createElement('canvas');c.width=v.width;c.height=v.height;await pg.render({canvasContext:c.getContext('2d'),viewport:v}).promise;
 const im=await out.embedJpg(unb64(c.toDataURL('image/jpeg',.92).split(',')[1]));out.addPage([v1.width,v1.height]).drawImage(im,{x:0,y:0,width:v1.width,height:v1.height})}}
-let MG=[];
+let MG=[],MGN='merged';
 function mergeUi(){$('#app').innerHTML=`<div class="bar"><button class="ib" id="bb" aria-label="Back">${I(ic.back)}</button><h1 style="font-size:22px">Merge PDF</h1></div><p class="hint">Add two or more PDFs, put them in order, then merge. Password-protected files will ask for their password.</p>
 ${MG.length?MG.map((f,i)=>`<div class="r"><div style="flex:1;min-width:0"><b style="font-weight:600">${i+1}. ${esc(f.name)}</b><span>${(f.buf.byteLength/1048576).toFixed(2)} MB</span></div><button class="ib" data-u="${i}" aria-label="Move up">&#9650;</button><button class="ib" data-d="${i}" aria-label="Move down">&#9660;</button><button class="ib" data-r="${i}" aria-label="Remove">${I(ic.x)}</button></div>`).join(''):'<div class="em">No PDFs added yet.</div>'}
-<div style="display:flex;gap:8px;margin-top:10px"><button class="sec" id="ma" style="flex:1">Add PDFs</button><button class="sec" id="mrs" style="flex:none;padding:0 18px">Reset</button></div><div class="f"><label for="mn">File name</label><input id="mn" value="merged"></div><button class="pri" id="mgo">Merge and save PDF</button>`;
-$('#bb').onclick=()=>{MG=[];home()};
-$('#mrs').onclick=()=>{if(!MG.length&&$('#mn').value=='merged')return toast('Nothing to clear.');if(MG.length&&!confirm('Clear all added PDFs and start over?'))return;MG=[];mergeUi();toast('Merge list cleared.')};
+<div style="display:flex;gap:8px;margin-top:10px"><button class="sec" id="ma" style="flex:1">Add PDFs</button><button class="sec" id="mrs" style="flex:none;padding:0 18px">Reset</button></div><div class="f"><label for="mn">File name</label><input id="mn" value="${esc(MGN)}"></div><button class="pri" id="mgo">Merge and save PDF</button>`;
+$('#bb').onclick=()=>{MG=[];MGN='merged';home()};
+$('#mn').oninput=()=>{MGN=$('#mn').value};
+$('#mrs').onclick=()=>{if(!MG.length&&$('#mn').value=='merged')return toast('Nothing to clear.');if(MG.length&&!confirm('Clear all added PDFs and start over?'))return;MG=[];MGN='merged';mergeUi();toast('Merge list cleared.')};
 $('#ma').onclick=()=>pick('application/pdf,.pdf',1,async fs=>{for(const f of fs)MG.push({name:f.name,buf:await f.arrayBuffer()});mergeUi()});
 document.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{const i=+b.dataset.u;if(i>0){[MG[i-1],MG[i]]=[MG[i],MG[i-1]];mergeUi()}});
 document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{const i=+b.dataset.d;if(i<MG.length-1){[MG[i+1],MG[i]]=[MG[i],MG[i+1]];mergeUi()}});
@@ -886,7 +885,7 @@ const needLibs=(...n)=>{if(n.every(k=>window[k]))return 1;toast('This conversion
 const imgEl=f=>new Promise((ok,no)=>{const u=URL.createObjectURL(f),i=new Image();i.onload=()=>{URL.revokeObjectURL(u);ok(i)};i.onerror=()=>{URL.revokeObjectURL(u);no(new Error('img'))};i.src=u});
 const imgBlob=async(f,type,q)=>{const i=await imgEl(f),c=document.createElement('canvas');c.width=i.naturalWidth;c.height=i.naturalHeight;const x=c.getContext('2d');if(type=='image/jpeg'){x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height)}x.drawImage(i,0,0);return new Promise((ok,no)=>c.toBlob(b=>b?ok(b):no(new Error('enc')),type,q))};
 async function imgsPdf(fs){if(!needLibs('PDFLib'))return;try{toast('Creating PDF...');const o=await PDFLib.PDFDocument.create();
-for(const f of fs){const e=fext(f.name),png=/png$/i.test(f.type)||e=='png',jp=/jpe?g$/i.test(f.type)||/^jpe?g$/.test(e),by=new Uint8Array(await((png||jp)?f:await imgBlob(f,'image/jpeg',.92)).arrayBuffer()),im=png?await o.embedPng(by):await o.embedJpg(by),pg=o.addPage([595,842]),k=Math.min(515/im.width,760/im.height,1);pg.drawImage(im,{x:(595-im.width*k)/2,y:(842-im.height*k)/2,width:im.width*k,height:im.height*k})}
+for(const f of fs){const e=fext(f.name),png=/png$/i.test(f.type)||e=='png',jp=/jpe?g$/i.test(f.type)||/^jpe?g$/.test(e),by=new Uint8Array(await(png?f:await imgBlob(f,'image/jpeg',.92)).arrayBuffer()),im=png?await o.embedPng(by):await o.embedJpg(by),pg=o.addPage([595,842]),k=Math.min(515/im.width,760/im.height,1);pg.drawImage(im,{x:(595-im.width*k)/2,y:(842-im.height*k)/2,width:im.width*k,height:im.height*k})}
 await dl(new Blob([await o.save()],{type:'application/pdf'}),(fs.length>1?'Pictures':fbase(fs[0].name))+'.pdf')}catch(e){toast('Could not create a PDF from this picture.')}}
 async function pdfImgs(f){if(!needLibs('JSZip','pdfjsLib'))return;try{pdfjsLib.GlobalWorkerOptions.workerSrc=WK;const pdf=await openPdf(new Uint8Array(await f.arrayBuffer())),z=new JSZip(),n=pdf.numPages;let one=null;
 for(let i=1;i<=n;i++){toast('Page '+i+' of '+n+'...');const pg=await pdf.getPage(i),v=pg.getViewport({scale:2}),c=document.createElement('canvas');c.width=v.width;c.height=v.height;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);await pg.render({canvasContext:x,viewport:v}).promise;const b=await new Promise(r=>c.toBlob(r,'image/png'));one=b;z.file(fbase(f.name)+'-page-'+String(i).padStart(2,'0')+'.png',b);c.width=c.height=0}
@@ -937,8 +936,8 @@ $('#cvw').onclick=async()=>{if(!needLibs('docx'))return;try{const e=document.cre
 async function backupPdfs(){const L=docs.filter(d=>d.html||d.src||(d.id==CVID&&d.cv)).sort((a,b)=>b.at-a.at);
 $('#app').innerHTML=`<div class="bar"><button class="ib" id="bb" aria-label="Back">${I(ic.back)}</button><h1 style="font-size:22px">Back up</h1></div><h2 style="margin-top:4px">Back up as PDFs</h2><p class="hint">PDFs open on any phone or computer. Choose what to include.</p>
 ${L.length?`<div class="r"><input type="checkbox" id="ball" checked><label for="ball"><b>Select all (${L.length})</b></label></div>${L.map((d,i)=>`<div class="r"><input type="checkbox" class="bc" id="b${i}" data-i="${i}" checked><label for="b${i}"><b>${esc(d.id==CVID?'My CV':d.title)}</b><span>${d.src?'Word':'Document'} · edited ${ago(d.at)}</span></label></div>`).join('')}<button class="pri" id="bz">Save selected as a ZIP of PDFs</button><button class="sec" id="b1" style="width:100%;margin-top:8px">Save selected as one combined PDF</button>`:'<div class="em">No documents to back up yet.</div>'}
-<h2>Full backup</h2><p class="hint">One file with everything, including your CV and certificates. To restore it, choose it under Word Docs. Spreadsheets are exported from the Spreadsheets page.</p><button class="sec" id="bj" style="width:100%">Save full backup (.json)</button>`;
-$('#bb').onclick=home;$('#bj').onclick=()=>dl(new Blob([JSON.stringify(docs)],{type:'application/json'}),'wg-workspace-backup.json');
+<h2>Full backup</h2><p class="hint">One file with everything, including your CV and certificates. To restore it, choose it under Word Docs. Spreadsheets are included.</p><button class="sec" id="bj" style="width:100%">Save full backup (.json)</button>`;
+$('#bb').onclick=home;$('#bj').onclick=()=>{if(!SS.length)ssLoad();dl(new Blob([JSON.stringify({docs,sheets:SS})],{type:'application/json'}),'wg-workspace-backup.json')};
 if(!L.length)return;let run=0;const sel=()=>[...document.querySelectorAll('.bc')].filter(c=>c.checked).map(c=>L[+c.dataset.i]);
 $('#ball').onchange=e=>document.querySelectorAll('.bc').forEach(c=>c.checked=e.target.checked);
 const build=async mode=>{const S=sel();if(!S.length)return toast('Select at least one document.');
@@ -1038,7 +1037,7 @@ try{const b=await h2pBlob(typeof html=='string'?html:(d.html||cvHtml(c)),703);
 const out=await PDFLib.PDFDocument.load(await b.arrayBuffer()),skipped=[];
 for(const x of c.certs){if(!x.f)continue;try{const t=x.f.t||'',raw=unb64(x.f.d.split(',')[1]);
 if(/pdf/i.test(t)||/\.pdf$/i.test(x.f.n)){const s=await PDFLib.PDFDocument.load(raw,{ignoreEncryption:true});(await out.copyPages(s,s.getPageIndices())).forEach(p=>out.addPage(p));continue}
-let bytes=raw;if(!/png|jpe?g/i.test(t))bytes=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>{const cv=document.createElement('canvas');cv.width=i.width;cv.height=i.height;cv.getContext('2d').drawImage(i,0,0);ok(unb64(cv.toDataURL('image/jpeg',.9).split(',')[1]))};i.onerror=no;i.src=x.f.d});
+let bytes=raw;if(!/png/i.test(t))bytes=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>{const k=Math.min(1,2200/Math.max(i.naturalWidth,i.naturalHeight)),cv=document.createElement('canvas');cv.width=Math.round(i.naturalWidth*k);cv.height=Math.round(i.naturalHeight*k);const g=cv.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,cv.width,cv.height);g.drawImage(i,0,0,cv.width,cv.height);ok(unb64(cv.toDataURL('image/jpeg',.9).split(',')[1]))};i.onerror=no;i.src=x.f.d});
 const im=/png/i.test(t)?await out.embedPng(bytes):await out.embedJpg(bytes),pg=out.addPage([595,842]),k=Math.min(515/im.width,760/im.height,1);
 pg.drawImage(im,{x:(595-im.width*k)/2,y:(842-im.height*k)/2,width:im.width*k,height:im.height*k})}catch(e){skipped.push(x.n)}}
 await dl(new Blob([await out.save()],{type:'application/pdf'}),((c.p.name||'CV').replace(/[^\w\- ]+/g,'')||'CV')+' - CV with certificates.pdf');
@@ -1087,10 +1086,9 @@ if(para&&(py-l.y>l.h*1.8||(l.h>med*1.25)!==(ph>med*1.25)))flush();
 para+=(para?' ':'')+s.trim();ph=Math.max(ph,l.h);py=l.y});flush();if(pi<pages.length-1)out+='<hr>'});return out}
 // ---- Import and merge
 $('#fi').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{
-if(/\.json$/i.test(f.name)){const a=JSON.parse(await f.text());a.forEach(d=>{const x=docs.find(y=>y.id==d.id);if(!x)docs.push(d);else if(d.id==CVID)cvMerge(x,d)});save();toast('Backup restored.');home();return}
+if(/\.json$/i.test(f.name)){const j=JSON.parse(await f.text()),a=Array.isArray(j)?j:(j.docs||[]);let n=0,sk=0;a.forEach(d=>{const x=docs.find(y=>y.id==d.id);if(!x){docs.push(d);n++}else if(d.id==CVID){cvMerge(x,d);n++}else sk++});if(j.sheets&&j.sheets.length){if(!SS.length)ssLoad();j.sheets.forEach(x=>{if(!SS.some(y=>y.id==x.id)){SS.push(x);n++}else sk++});ssSave()}save();toast(n+' restored'+(sk?', '+sk+' already here and kept.':'.'));home();return}
 if(/\.pdf$/i.test(f.name)){toast('Reading PDF...');let h=await pdfHtml(await f.arrayBuffer());if(!h&&confirm('No selectable text found. Run text recognition (OCR)? The first run downloads about 10 MB.'))h=await ocrPdf(await f.arrayBuffer());if(!h){toast('No text could be read from this PDF.');return}open(add(f.name.replace(/\.pdf$/i,''),h));toast('Text imported. Tables, images and exact layout are not carried over; check each page.');return}
 const buf=await f.arrayBuffer();if(window.DP&&DP.renderAsync&&window.JSZip){const id=add(f.name.replace(/\.docx$/i,''),'');const d=docs.find(x=>x.id==id);d.src=b64(buf);d.imp=1;d.at=Date.now();save();openWord(d);toast('Imported with the original Word layout.')}else{const r=await mammoth.convertToHtml({arrayBuffer:buf});open(add(f.name.replace(/\.docx$/i,''),r.value));toast('Imported (basic layout). Go online once for exact Word layout.')}}catch(x){toast('That file could not be imported. Use a .docx or a text-based .pdf file.')}};
-$('#fm').onchange=async e=>{const fs=[...e.target.files];e.target.value='';if(fs.length<2){toast('Choose at least two PDFs.');return}try{const o=await PDFLib.PDFDocument.create();for(const f of fs){const s=await PDFLib.PDFDocument.load(await f.arrayBuffer());(await o.copyPages(s,s.getPageIndices())).forEach(p=>o.addPage(p))}dl(new Blob([await o.save()],{type:'application/pdf'}),'merged.pdf')}catch(x){toast('Merge failed. A file may be damaged or password protected.')}};
 // ---- PDF viewer: shows the original pages, adds text, highlights, date and signature on top, saves into the same PDF
 const WK='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';let V=null,tool='',sig='',ini='',io;try{sig=localStorage.getItem('wg_sig'+UK)||'';ini=localStorage.getItem('wg_ini'+UK)||''}catch(e){}
 async function viewPdf(f){try{pdfjsLib.GlobalWorkerOptions.workerSrc=WK;const buf=await f.arrayBuffer(),pdf=await openPdf(new Uint8Array(buf.slice(0)));V={ff:{},buf,pdf,name:f.name.replace(/\.pdf$/i,''),an:[],zoom:1,vp:[]};
@@ -1101,7 +1099,7 @@ document.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{const k=b.datase
 $('#vn').onclick=()=>pad();$('#vi').onclick=()=>pad('n');$('#vu').onclick=()=>{for(let i=V.an.length-1;i>=0;i--)if(V.an[i].k!='x'){V.an.splice(i,1);break}document.querySelectorAll('.pgw').forEach(ovr)};
 $('#v1').onclick=()=>{V.zoom=Math.max(.6,V.zoom-.25);lay()};$('#v2').onclick=()=>{V.zoom=Math.min(3,V.zoom+.25);lay()};$('#vsv').onclick=savePdf;lay()}
 function lay(){const vs=$('#vs');vs.innerHTML='';io&&io.disconnect();io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting&&!e.target.dataset.r){e.target.dataset.r=1;draw(e.target)}}),{root:vs,rootMargin:'400px'});
-const W=Math.min(vs.clientWidth-16,900)*V.zoom;V.vp.forEach((v,i)=>{if(!v)return;const el=document.createElement('div');el.className='pgw';el.dataset.p=i;el.style.cssText=`width:${W}px;height:${W*v[1]/v[0]}px;--w:${W}px`;el.innerHTML='<div class="ov"></div>';vs.appendChild(el);io.observe(el);ov(el)})}
+const W=Math.min(vs.clientWidth-16,900)*V.zoom;V.vp.forEach((v,i)=>{if(!v)return;const el=document.createElement('div');el.className='pgw';el.dataset.p=i;el.style.cssText=`width:${W}px;height:${W*v[1]/v[0]}px;--w:${W}px`;el.innerHTML='<div class="ov"></div>';vs.appendChild(el);io.observe(el);ov(el);ovr(el)})}
 async function fields(el,pg){try{const an=(await pg.getAnnotations({intent:'display'})).filter(a=>a.subtype=='Widget'&&!a.readOnly&&a.fieldName&&!a.pushButton&&['Tx','Btn','Ch'].includes(a.fieldType));if(!an.length)return;const vp=pg.getViewport({scale:1}),L=document.createElement('div');L.className='ffl';
 an.forEach(a=>{const[x1,y1,x2,y2]=vp.convertToViewportRectangle(a.rect),x=Math.min(x1,x2),y=Math.min(y1,y2),w=Math.abs(x2-x1),h=Math.abs(y2-y1),n=a.fieldName,has=n in V.ff,chg=v=>{V.ff[n]=v;V.fd=1};let e;
 if(a.fieldType=='Tx'){e=document.createElement(a.multiLine?'textarea':'input');e.value=has?V.ff[n]:[].concat(a.fieldValue||'')[0];if(a.maxLen)e.maxLength=a.maxLen;e.oninput=()=>chg(e.value)}
@@ -1142,7 +1140,12 @@ else if(a.k=='s')pg.drawImage(img,{x:a.x*W,y:H-(a.y+a.h)*H,width:a.w*W,height:a.
 else if(a.k=='t'&&a.t){const z=a.f*W;pg.drawText(a.t,{x:a.x*W+2,y:H-a.y*H-z*.85,size:z,font:fn,color:D.rgb(0,0,0)})}}
 dl(new Blob([await doc.save()],{type:'application/pdf'}),V.name+'-edited.pdf')}catch(e){toast('Could not save. Password-protected PDFs and some special characters are not supported.')}}
 $('#fp').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)viewPdf(f)};
-$('#fc').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)$('#fi').onchange({target:{files:[f],value:''}})};
+// ---- Back button: step back inside the app instead of closing it
+(()=>{let on=0;const push=()=>{try{history.pushState({wg:1},'')}catch(e){}on=1},need=()=>document.querySelector('#bb,#vw,.sh');
+new MutationObserver(()=>{if(!on&&need())push()}).observe(document.body,{childList:true,subtree:true});
+addEventListener('popstate',()=>{on=0;const sh=document.querySelector('.sh');if(sh){sh.remove();return push()}
+const vb=document.querySelector('#vb');if(vb){vb.click();setTimeout(()=>{if(!on&&need())push()},0);return}
+const bb=document.querySelector('#bb');if(bb){bb.click();setTimeout(()=>{if(!on&&need())push()},0)}})})();
 boot();
 if('serviceWorker' in navigator&&location.protocol=='https:'){const had=!!navigator.serviceWorker.controller;let rl=false;
 navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!had||rl)return;rl=true;location.reload()});
