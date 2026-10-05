@@ -49,7 +49,7 @@ h2{font-size:20px;margin:24px 0 10px}
 .tb[hidden]{display:none}.tb button[aria-pressed=true]{background:var(--bl2);border-color:var(--bl);color:var(--bl)}.tb .lb{flex:none;align-self:center;min-width:34px;text-align:center;font-weight:600;font-size:14px;color:var(--mut)}
 .tb .sw{width:44px;padding:0;display:grid;place-items:center}.tb .sw span{width:24px;height:24px;border-radius:50%;border:1px solid var(--ln)}
 .pg blockquote,.ex blockquote{border-left:3px solid #1A47C8;margin:8px 0;padding:2px 12px;color:#444}.pg hr,.ex hr{border:0;border-top:1px solid #999;margin:12px 0}
-html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden;touch-action:pan-x pan-y pinch-zoom}body{overflow-x:hidden}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden;touch-action:pan-x pan-y}html:has(#vw){touch-action:pan-x pan-y pinch-zoom}body{overflow-x:hidden}
 .strip{scroll-padding:0 16px;display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:2px 16px 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}.strip::-webkit-scrollbar{display:none}
 .sc2{position:relative;flex:none;width:156px;scroll-snap-align:start;background:var(--sf);border:1px solid var(--ln);border-radius:14px;overflow:hidden}
 .sc2>button:first-child{display:block;width:100%;border:0;background:none;text-align:left;padding:0;min-height:0}
@@ -1268,6 +1268,11 @@ else if(a.k=='s')pg.drawImage(img,{x:a.x*W,y:H-(a.y+a.h)*H,width:a.w*W,height:a.
 else if(a.k=='t'&&a.t){const z=a.f*W;pg.drawText(a.t,{x:a.x*W+2,y:H-a.y*H-z*.85,size:z,font:fn,color:D.rgb(0,0,0)})}}
 dl(new Blob([await doc.save()],{type:'application/pdf'}),V.name+'-edited.pdf')}catch(e){toast('Could not save. Password-protected PDFs and some special characters are not supported.')}}
 $('#fp').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)viewPdf(f)};
+// ---- Only the A4 paper may zoom. The app page itself never scales (the PDF viewer keeps its own pinch).
+(()=>{const free=e=>{const t=e.target;return!!(t&&t.closest&&t.closest('#vw,.wv'))};
+['gesturestart','gesturechange','gestureend'].forEach(k=>document.addEventListener(k,e=>{if(!free(e))e.preventDefault()},{passive:false}));
+document.addEventListener('touchmove',e=>{if(e.touches.length>1&&e.cancelable&&!free(e))e.preventDefault()},{passive:false});
+document.addEventListener('wheel',e=>{if(e.ctrlKey&&!free(e))e.preventDefault()},{passive:false})})();
 // ---- Navigation history: Back (button, phone back, swipe) always returns to the page you were really on before
 const NV={st:[],bk:0,dp:0,fn:{}};
 function nvWrap(n,f,ser,de){ser=ser||(()=>[]);de=de||(a=>a);NV.fn[n]={f,de};
