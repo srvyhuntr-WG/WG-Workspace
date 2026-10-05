@@ -244,6 +244,7 @@ var TA=_.create({name:"textAlign",addGlobalAttributes(){return[{types:["paragrap
 window.WGEditor={make:(n,e,t)=>new jn({element:n,content:e,extensions:[wa.configure({heading:{levels:[1,2,3]}}),Ca,ec,tc,nc,rc,oc.configure({allowBase64:!0}),qp,TS,TA],onUpdate:()=>t()})};})();
 </script>
 <script>window.WGEditor={make(n,e,t){const s=document.createElement('script');s.textContent=document.getElementById('wged').textContent;document.head.appendChild(s);return window.WGEditor.make(n,e,t)}}</script>
+<script>window.wgOpen=window.open.bind(window)</script>
 <script>
 try{['wg_chat_url','wg_chat_local','wg_cloud'].forEach(k=>localStorage.removeItem(k))}catch(e){}
 const $=s=>document.querySelector(s),TK='wg_theme';let K='wg_docs',UK='';
@@ -568,9 +569,9 @@ $('#cvp').oninput=e=>{const k=e.target.dataset.p;if(k){p[k]=e.target.value;cvSav
 $('#ce_a').onclick=async()=>{const n=$('#ce_n').value.trim();if(!n)return toast('Enter the certification name.');const fl=$('#ce_f').files[0];let f=null;
 if(fl){if(fl.size>5e6)return toast('That file is over 5 MB. Choose a smaller scan or photo.');f=await new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok({n:fl.name,t:fl.type,d:r.result});r.onerror=no;r.readAsDataURL(fl)})}
 c.certs.push({id:uid(),n,i:$('#ce_i').value.trim(),x:$('#ce_x').value,f});cvSave(d);cvHome()};
-document.querySelectorAll('[data-cf]').forEach(b=>b.onclick=()=>{const x=c.certs.find(y=>y.id==b.dataset.cf);if(!x||!x.f)return;const u=unb64(x.f.d.split(',')[1]),url=URL.createObjectURL(new Blob([u],{type:x.f.t||'application/octet-stream'}));window.open(url,'_blank')||dl(new Blob([u],{type:x.f.t}),x.f.n)});
+document.querySelectorAll('[data-cf]').forEach(b=>b.onclick=()=>{const x=c.certs.find(y=>y.id==b.dataset.cf);if(!x||!x.f)return;const u=unb64(x.f.d.split(',')[1]),url=URL.createObjectURL(new Blob([u],{type:x.f.t||'application/octet-stream'}));wgOpen(url,'_blank')||dl(new Blob([u],{type:x.f.t}),x.f.n)});
 document.querySelectorAll('[data-cu]').forEach(b=>b.onclick=()=>{const x=c.certs.find(y=>y.id==b.dataset.cu);if(x&&confirm('Remove the attached file from this certification?')){delete x.f;cvSave(d);cvHome()}});
-$('#cvtp').onclick=cvTpl;$('#cvpk').onclick=cvPack;$('#cvsv').onclick=()=>{docs.unshift({id:uid(),title:'CV - '+(p.name||'Saved')+' '+isoToday(),html:d.html||cvHtml(c),at:Date.now()});save();toast('CV saved in the app. Find it under Recent.')};
+$('#cvtp').onclick=cvTpl;$('#cvpk').onclick=()=>cvPack();$('#cvsv').onclick=()=>{docs.unshift({id:uid(),title:'CV - '+(p.name||'Saved')+' '+isoToday(),html:d.html||cvHtml(c),at:Date.now()});save();toast('CV saved in the app. Find it under Recent.')};
 document.querySelectorAll('[data-cx]').forEach(b=>b.onclick=()=>{if(confirm('Remove this certification?')){c.certs=c.certs.filter(x=>x.id!=b.dataset.cx);cvSave(d);cvHome()}});
 document.querySelectorAll('[data-jo]').forEach(b=>b.onclick=()=>{cvEdit=b.dataset.jo;cvHome();$('#jf').scrollIntoView()});
 document.querySelectorAll('[data-jx]').forEach(b=>b.onclick=()=>{if(confirm('Delete this job from your log?')){c.jobs=c.jobs.filter(x=>x.id!=b.dataset.jx);if(cvEdit==b.dataset.jx)cvEdit=null;cvSave(d);cvHome()}});
@@ -643,8 +644,8 @@ const nm=()=>($('#ti').value||'document').replace(/[^\w\- ]+/g,'');
 $('#ew').onclick=async()=>{try{const tm=document.createElement('div');tm.innerHTML=html();dl(await docx.Packer.toBlob(wordDoc(tm)),nm()+'.docx')}catch(e){toast('Word export needs the library to load once online.')}};
 $('#sv').onclick=()=>{clearTimeout(st);cur.html=html();cur.title=$('#ti').value||'Untitled';cur.at=Date.now();if(cur.id==CVID&&cur.cv)cur.cv.ed=1;save();toast('Saved')};$('#ep').onclick=()=>imgpdf(pg,nm())}
 async function imgpdf(pg,n,w){toast('Creating PDF...');try{if(window.PDFLib){const e=document.createElement('div');e.innerHTML=(pg.querySelector('.ProseMirror')||pg).innerHTML;const b=await vecPdf(e);if(b)return dl(b,n+'.pdf')}}catch(x){}imgpdfRaster(pg,n,w)}
-function imgpdfRaster(pg,n,w){toast('Creating PDF...');const pm=pg.querySelector('.ProseMirror'),c=document.createElement('div');c.className='ex';c.style.cssText='position:fixed;left:-9999px;top:0;width:'+(w||703)+'px';c.innerHTML=pm?pm.innerHTML:pg.innerHTML;document.body.appendChild(c);
-const done=()=>c.remove();try{html2pdf().set({margin:12,html2canvas:{scale:2,windowWidth:w||703,backgroundColor:'#fff'},jsPDF:{unit:'mm',format:'a4'},pagebreak:{mode:['css','legacy'],avoid:['tr','h1','h2','h3','li']}}).from(c).outputPdf('blob').then(b=>{done();dl(b,n+'.pdf')}).catch(async()=>{done();try{if(!window.PDFLib)throw 0;await dl(await textPdf(pg),n+'.pdf');toast('Exported as a text-only PDF (pictures and layout not included).')}catch(e){toast('PDF export failed. Save, reopen the document and try again.')}})}catch(e){done();toast('PDF export needs the library to load once online.')}}
+function imgpdfRaster(pg,n,w){toast('Creating PDF...');if(!window.html2pdf)return toast('PDF export needs the library to load once online.');const pm=pg.querySelector('.ProseMirror');
+h2pBlob(pm?pm.innerHTML:pg.innerHTML,w||703).then(b=>dl(b,n+'.pdf')).catch(async()=>{try{if(!window.PDFLib)throw 0;await dl(await textPdf(pg),n+'.pdf');toast('Exported as a text-only PDF (pictures and layout not included).')}catch(e){toast('PDF export failed. Save, reopen the document and try again.')}})}
 const prt=n=>{const t=document.title;document.title=n;addEventListener('afterprint',()=>document.title=t,{once:true});print()};
 const IB=p=>I(p).replace('width="22" height="22"','width="46" height="46"').replace('stroke-width="1.9"','stroke-width="2.3"');
 const icMail='<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',icWa='<path d="M4 20l1.3-4.2A8 8 0 1 1 8.4 18.8z"/><path d="M9 9c0 3 3 6 6 6l1-1.5-2-1-1 .8c-1-.4-2-1.4-2.4-2.4l.8-1-1-2z"/>',icWd='<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M8.5 12l1.5 5 2-4 2 4 1.5-5"/>',icPdf='<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M8 17v-5h2a1.5 1.5 0 0 1 0 3H8"/>',icArr='<path d="M4 8h14l-3-3M20 16H6l3 3"/>';
@@ -787,24 +788,66 @@ return new Blob([await out.save()],{type:'application/pdf'})}
 // ---- Share Docs
 ic.sh='<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8-4"/>';
 const PDFO=w=>({margin:12,html2canvas:{scale:2,windowWidth:w,backgroundColor:'#fff'},jsPDF:{unit:'mm',format:'a4'},pagebreak:{mode:['css','legacy'],avoid:['tr','h1','h2','h3','li']}});
+async function h2pBlob(html,w){const wrap=document.createElement('div');wrap.style.cssText='position:fixed;left:-9999px;top:0;width:'+w+'px';
+const c=document.createElement('div');c.className='ex';c.style.width=w+'px';c.innerHTML=html;wrap.appendChild(c);document.body.appendChild(wrap);
+const sy=window.scrollY,sx=window.scrollX,o=PDFO(w);o.html2canvas.scrollX=0;o.html2canvas.scrollY=0;window.scrollTo(0,0);
+try{return await html2pdf().set(o).from(c).outputPdf('blob')}finally{wrap.remove();window.scrollTo(sx,sy)}}
 async function mkPdf(d){const c=document.createElement('div');c.className=d.src?'cnv':'ex';const w=d.src?834:703;c.style.cssText=d.src?'position:absolute;left:0;top:0;z-index:-1;pointer-events:none':'position:fixed;left:-9999px;top:0;width:'+w+'px';document.body.appendChild(c);
-try{if(d.src){if(!d.imp&&d.vh)c.innerHTML=d.vh;else await wShow(d,c,0);await new Promise(r=>setTimeout(r,250));return await secPdf(c)}c.innerHTML=d.html;return await html2pdf().set(PDFO(w)).from(c).outputPdf('blob')}finally{c.remove()}}
+try{if(d.src){if(!d.imp&&d.vh)c.innerHTML=d.vh;else await wShow(d,c,0);await new Promise(r=>setTimeout(r,250));return await secPdf(c)}return await h2pBlob(d.html,w)}finally{c.remove()}}
 const dtext=d=>{const e=document.createElement('div');e.innerHTML=d.html||d.vh||'';e.querySelectorAll('style').forEach(x=>x.remove());return(e.textContent||'').replace(/\s+/g,' ').trim().slice(0,1200)};
 async function sendFile(d,kind){if(!navigator.onLine)return toast('No internet connection. Connect to send.');
 try{toast('Preparing '+(kind=='pdf'?'PDF':'Word file')+'...');const n=(d.title||'document').replace(/[^\w\- ]+/g,'')||'document';
 const b=kind=='pdf'?await mkPdf(d):await wordBlob(d);await dl(b,n+(kind=='pdf'?'.pdf':'.docx'))}catch(e){toast('Could not prepare the file.')}}
-function shareDoc(d){const body=dtext(d)||'Please find "'+d.title+'" attached.';
-sheet('Share "'+d.title+'"',[['Send as PDF','Pick WhatsApp, email, Drive or any app',()=>sendFile(d,'pdf'),1],['Send as Word (.docx)','Editable copy through any app',()=>sendFile(d,'docx')],
-['Email','Opens your email app with the text. Use Send as PDF to attach the file.',()=>{location.href='mailto:?subject='+encodeURIComponent(d.title)+'&body='+encodeURIComponent(body)}],
-['WhatsApp','Opens WhatsApp with the text. Use Send as PDF to attach the file.',()=>{if(!navigator.onLine)return toast('No internet connection. Connect to send.');window.open('https://wa.me/?text='+encodeURIComponent(d.title+'\n\n'+body),'_blank')}]])}
+const shName=d=>(d.title||'document').replace(/[^\w\- ]+/g,'').trim()||'document';
+const saveBlob=(b,n)=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=n;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),60000)};
+const shBody=(d,max)=>{let t=dtext(d);if(!t)return'Please find "'+d.title+'" attached.';return t.length>max?t.slice(0,max).replace(/\s+\S*$/,'')+'...':t};
+const openUrl=u=>{const w=wgOpen(u,'_blank');if(!w)location.href=u};
+function mailUrl(to,subj,body){let b=body;const mk=()=>'mailto:'+encodeURIComponent(to).replace(/%40/g,'@')+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(b);
+while(mk().length>1900&&b.length>60)b=b.slice(0,Math.floor(b.length*.8)).replace(/\s+\S*$/,'')+'...';return mk()}
+function waUrl(num,text){let t=text;const mk=()=>'https://wa.me/'+num+'?text='+encodeURIComponent(t);
+while(mk().length>3000&&t.length>60)t=t.slice(0,Math.floor(t.length*.8)).replace(/\s+\S*$/,'')+'...';return mk()}
+// Returns {ok,val}. Phone: digits only, country code required, no leading 00 or +.
+function shTo(k,v){v=(v||'').trim();if(!v)return{ok:1,val:''};
+if(k=='mail')return/^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]{2,}$/.test(v)?{ok:1,val:v}:{ok:0,msg:'That email address does not look right.'};
+let n=v.replace(/[\s().\-]/g,'');if(n.startsWith('+'))n=n.slice(1);else if(n.startsWith('00'))n=n.slice(2);
+return/^[1-9]\d{7,14}$/.test(n)?{ok:1,val:n}:{ok:0,msg:'Enter the number with country code, e.g. +44 7700 900123.'}}
+async function shareFile(d,k,kind,to){if(!navigator.onLine)return toast('No internet connection. Connect to send.');
+const mail=k=='mail',pdf=kind=='pdf';
+try{toast('Preparing '+(pdf?'PDF':'Word file')+'...');const n=shName(d)+(pdf?'.pdf':'.docx'),b=pdf?await mkPdf(d):await wordBlob(d),
+f=new File([b],n,{type:b.type||(pdf?'application/pdf':'application/vnd.openxmlformats-officedocument.wordprocessingml.document')}),
+note='Please find "'+d.title+'" attached.',
+fallback=()=>{saveBlob(b,n);toast('Saved "'+n+'". Attach it in '+(mail?'your email':'WhatsApp')+'.');
+setTimeout(()=>{if(mail)location.href=mailUrl(to,d.title,note+'\n\n(Attach the file "'+n+'" from your Downloads.)');else openUrl(waUrl(to,note+' (File: '+n+')'))},600)};
+if(navigator.canShare&&navigator.canShare({files:[f]})){
+try{await navigator.share({files:[f],title:d.title,text:note});return}catch(e){if(e.name=='AbortError')return;
+sheet('Your file is ready',[['Share "'+esc(n)+'"','Pick '+(mail?'your email app':'WhatsApp')+' in the menu',()=>navigator.share({files:[f],title:d.title,text:note}).catch(e2=>{if(e2.name!='AbortError')fallback()}),1],['Download and open '+(mail?'email':'WhatsApp'),'Saves the file, then opens a draft message',fallback]]);return}}
+fallback()}catch(e){toast('Could not prepare the file.')}}
+function shareAsk(d,k){const mail=k=='mail',nm=mail?'Email':'WhatsApp',e=document.createElement('div');e.className='sh';
+e.innerHTML=`<div role="dialog" aria-modal="true" aria-label="Share by ${nm}"><b>${nm}: ${esc(d.title)}</b>
+<div class="f" style="margin:0"><label for="sh_to" style="margin-top:0">${mail?'Send to (optional)':'WhatsApp number with country code (optional)'}</label><input id="sh_to" type="${mail?'email':'tel'}" inputmode="${mail?'email':'tel'}" autocomplete="off" autocapitalize="none" placeholder="${mail?'name@example.com':'+44 7700 900123'}" style="color:var(--ink)"></div>
+<div id="sh_e" class="er" role="alert" style="margin:0"></div>
+<button class="y" id="sh_p">Send as PDF file<br><small style="font-weight:400">Attaches the document</small></button>
+<button id="sh_w">Send as Word file (.docx)<br><small style="font-weight:400">Editable copy</small></button>
+<button id="sh_t">Send text only<br><small style="font-weight:400">Opens ${mail?'your email app':'WhatsApp'} with the text</small></button>
+<button id="sh_x">Cancel</button><p class="hint" style="margin:0">Files attach straight away on most phones. On a computer the file is saved to Downloads and a draft opens so you can attach it.</p></div>`;
+const close=()=>e.remove(),go=fn=>{const r=shTo(k,e.querySelector('#sh_to').value);if(!r.ok){e.querySelector('#sh_e').textContent=r.msg;return}close();fn(r.val)};
+e.onclick=ev=>{if(ev.target==e)close()};e.onkeydown=ev=>{if(ev.key=='Escape')close()};
+e.querySelector('#sh_x').onclick=close;
+e.querySelector('#sh_p').onclick=()=>go(to=>shareFile(d,k,'pdf',to));
+e.querySelector('#sh_w').onclick=()=>go(to=>shareFile(d,k,'docx',to));
+e.querySelector('#sh_t').onclick=()=>go(to=>{if(mail)location.href=mailUrl(to,d.title,shBody(d,1200));else{if(!navigator.onLine)return toast('No internet connection. Connect to send.');openUrl(waUrl(to,d.title+'\n\n'+shBody(d,1500)))}});
+document.body.appendChild(e);e.querySelector('#sh_to').focus()}
+async function sendFile(d,kind){if(!navigator.onLine)return toast('No internet connection. Connect to send.');
+try{toast('Preparing '+(kind=='pdf'?'PDF':'Word file')+'...');const n=shName(d);
+const b=kind=='pdf'?await mkPdf(d):await wordBlob(d);await dl(b,n+(kind=='pdf'?'.pdf':'.docx'))}catch(e){toast('Could not prepare the file.')}}
+function shareDoc(d){sheet('Share "'+esc(d.title)+'"',[['Send as PDF','Pick WhatsApp, email, Drive or any app',()=>sendFile(d,'pdf'),1],['Send as Word (.docx)','Editable copy through any app',()=>sendFile(d,'docx')],['Email','Add an address, attach PDF or Word',()=>shareAsk(d,'mail')],['WhatsApp','Add a number, attach PDF or Word',()=>shareAsk(d,'wa')]])}
 function shareHome(){
-$('#app').innerHTML=`<div class="bar"><button class="ib" id="bb" aria-label="Back">${I(ic.back)}</button><h1 style="font-size:22px">Share</h1></div><div class="tg"><button class="t" data-k="pdf" aria-label="Send as PDF">${IB(icPdf)}<b>PDF</b></button><button class="t" data-k="docx" aria-label="Send as Word">${IB(icWd)}<b>Word</b></button><button class="t" data-k="mail" aria-label="Email">${IB(icMail)}<b>Email</b></button><button class="t" data-k="wa" aria-label="WhatsApp">${IB(icWa)}<b>WhatsApp</b></button></div>`;
+$('#app').innerHTML=`<div class="bar"><button class="ib" id="bb" aria-label="Back">${I(ic.back)}</button><h1 style="font-size:22px">Share</h1></div><div class="tg"><button class="t" data-k="pdf" aria-label="Send as PDF">${IB(icPdf)}<b>PDF</b></button><button class="t" data-k="docx" aria-label="Send as Word">${IB(icWd)}<b>Word</b></button><button class="t" data-k="mail" aria-label="Email">${IB(icMail)}<b>Email</b></button><button class="t" data-k="wa" aria-label="WhatsApp">${IB(icWa)}<b>WhatsApp</b></button></div><p class="hint">Email and WhatsApp let you add a recipient and attach the document as a PDF or Word file, or send just the text.</p>`;
 $('#bb').onclick=home;document.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>sharePick(b.dataset.k))}
-function sharePick(k){const L=docs.filter(d=>(d.html||d.src)&&d.id!=CVID),N={pdf:'PDF',docx:'Word',mail:'Email',wa:'WhatsApp'}[k];
+function sharePick(k){const L=docs.filter(d=>(d.html||d.src)&&d.id!=CVID).sort((a,b)=>b.at-a.at),N={pdf:'PDF',docx:'Word',mail:'Email',wa:'WhatsApp'}[k];
 $('#app').innerHTML=`<div class="bar"><button class="ib" id="bb" aria-label="Back">${I(ic.back)}</button><h1 style="font-size:22px">${N}: pick a document</h1></div>${L.length?'<div class="dg">'+L.map(d=>{const x=exc(d);return `<div class="sc2"><button data-s="${d.id}" aria-label="Share ${esc(d.title)}"><div class="sth"><div class="spg">${x?esc(x):'<i style="width:90%"></i><i style="width:70%"></i><i style="width:80%"></i>'}</div></div><div class="smt"><b>${esc(d.title)}</b><span>Edited ${ago(d.at)}</span></div></button></div>`}).join('')+'</div>':'<div class="em">No documents yet.</div>'}`;
-$('#bb').onclick=shareHome;document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{const d=docs.find(x=>x.id==b.dataset.s),body=dtext(d)||'Please find "'+d.title+'" attached.';
-if(k=='pdf'||k=='docx')sendFile(d,k);else if(k=='mail')location.href='mailto:?subject='+encodeURIComponent(d.title)+'&body='+encodeURIComponent(body);
-else{if(!navigator.onLine)return toast('No internet connection. Connect to send.');window.open('https://wa.me/?text='+encodeURIComponent(d.title+'\n\n'+body),'_blank')}})}
+$('#bb').onclick=shareHome;document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{const d=docs.find(x=>x.id==b.dataset.s);if(!d)return;
+if(k=='pdf'||k=='docx')sendFile(d,k);else shareAsk(d,k)})}
 
 // ---- Merge and Converter
 const secPdf=async root=>{const out=await PDFLib.PDFDocument.create();let secs=[...root.querySelectorAll('section.docx')];
@@ -883,11 +926,12 @@ const CVT=[['Classic',"Georgia,'Times New Roman',serif",'#eeeeee','#111','text-a
 const cvCss=i=>{const[,f,b,k,h1,h2]=CVT[i];return `.cvt{font:13px/1.5 ${f};color:#222;background:#fff}.cvt .hd{display:none}.cvt h1{${h1}}.cvt h2{${h2}}.cvt p{margin:4px 0}.cvt ul{margin:4px 0;padding-left:20px}.cvt table{border-collapse:collapse;width:100%}.cvt td,.cvt th{border:1px solid #ccc;padding:4px 6px;font-size:12px;text-align:left;vertical-align:top}.cvt th{background:${b};color:${k}}`};
 let cvT=0;
 function cvTpl(){const d=cvDoc(),c=d.cv,p=c.p,full=()=>'<style>'+cvCss(cvT)+'</style><div class="cvt">'+cvHtml(c)+'</div>',nm=()=>((p.name||'CV').replace(/[^\w\- ]+/g,'')||'CV')+' - '+CVT[cvT][0];
-$('#app').innerHTML=`<div class="bar"><button class="ib" id="bb" aria-label="Back">${I(ic.back)}</button><h1 style="font-size:22px">CV templates</h1></div><div class="tb" id="cvtb">${CVT.map((t,i)=>`<button data-t="${i}" aria-pressed="${i==cvT}">${t[0]}</button>`).join('')}</div><div style="border:1px solid var(--ln);border-radius:6px;overflow:hidden;background:#fff"><div id="cvpv" style="width:703px;zoom:.5;padding:20px;box-sizing:border-box;background:#fff;color:#111"></div></div><div class="act"><button id="cvw">Word</button><button class="y" id="cvx">PDF</button></div><p class="hint">Built from your CV details, certificates and job log. Update them in My CV and every style updates. Word keeps the content and structure; colours and fonts are PDF-only.</p>`;
+$('#app').innerHTML=`<div class="bar"><button class="ib" id="bb" aria-label="Back">${I(ic.back)}</button><h1 style="font-size:22px">CV templates</h1></div><div class="tb" id="cvtb">${CVT.map((t,i)=>`<button data-t="${i}" aria-pressed="${i==cvT}">${t[0]}</button>`).join('')}</div><div style="border:1px solid var(--ln);border-radius:6px;overflow:hidden;background:#fff"><div id="cvpv" style="width:703px;zoom:.5;padding:20px;box-sizing:border-box;background:#fff;color:#111"></div></div><div class="act"><button id="cvw">Word</button><button class="y" id="cvx">PDF</button></div><button class="sec" id="cvk" style="width:100%;margin-top:8px">PDF with certificates attached</button><p class="hint">Built from your CV details, certificates and job log. Update them in My CV and every style updates. Word keeps the content and structure; colours and fonts are PDF-only.</p>`;
 const show=()=>{$('#cvpv').innerHTML=full()};show();
 $('#bb').onclick=cvHome;
 document.querySelectorAll('#cvtb [data-t]').forEach(b=>b.onclick=()=>{cvT=+b.dataset.t;document.querySelectorAll('#cvtb [data-t]').forEach(x=>x.setAttribute('aria-pressed',x===b));show()});
 $('#cvx').onclick=async()=>{if(!needLibs('html2pdf'))return;try{toast('Creating PDF...');await dl(await mkPdf({html:full()}),nm()+'.pdf')}catch(e){toast('Could not create the PDF.')}};
+$('#cvk').onclick=()=>{if(!needLibs('html2pdf','PDFLib'))return;cvPack(full())};
 $('#cvw').onclick=async()=>{if(!needLibs('docx'))return;try{const e=document.createElement('div');e.innerHTML=cvHtml(c);await dl(await docx.Packer.toBlob(wordDoc(e)),nm()+'.docx')}catch(e){toast('Could not create the Word file.')}}}
 // ---- Back up as PDFs
 async function backupPdfs(){const L=docs.filter(d=>d.html||d.src||(d.id==CVID&&d.cv)).sort((a,b)=>b.at-a.at);
@@ -913,6 +957,55 @@ const signOut=()=>{if(confirm('Sign out of '+ACCT.name+'?')){try{localStorage.re
 const sigMenu=k=>{const ni=k=='n',has=ni?ini:sig,key=(ni?'wg_ini':'wg_sig')+UK,w=ni?'initials':'signature',
 o=[[(has?'Draw new ':'Draw your ')+w,'Used when you sign PDFs',()=>{pad(k);const t=setInterval(()=>{if(!document.querySelector('.sh')){clearInterval(t);if($('#prf'))profileHome()}},300)},1]];
 if(has)o.push(['Remove '+w,'Delete it from this device',()=>{if(ni)ini='';else sig='';try{localStorage.removeItem(key)}catch(e){}profileHome()}]);sheet(ni?'Initials':'Signature',o)};
+function editProfile(){const d=cvDoc(),c=d.cv,p=c.p,E=esc,
+inp=(k,l,t)=>`<label for="ep_${k}">${l}</label><input id="ep_${k}" data-p="${k}" type="${t||'text'}" value="${E(p[k]||'')}" autocomplete="off">`;
+$('#app').innerHTML=`<div class="bar"><button class="ib" id="bb" aria-label="Back">${I(ic.back)}</button><h1 style="font-size:22px">Edit profile</h1></div>
+<h2>Your details</h2><div class="f" id="epf">${inp('name','Full name')}${inp('title','Job title')}${inp('loc','Location')}${inp('phone','Phone','tel')}${inp('email','Email','email')}</div>
+<p class="hint">These details also appear on your CV.</p><button class="pri" id="eps" style="margin-top:6px">Save details</button>
+<h2>Sign-in</h2><div class="f"><label for="ea_n">Username</label><input id="ea_n" type="text" value="${E(ACCT.name)}" autocapitalize="none" autocomplete="username">
+<label for="ea_c">Current password (needed to change username or password)</label><input id="ea_c" type="password" autocomplete="current-password">
+<label for="ea_p">New password (leave empty to keep the current one)</label><input id="ea_p" type="password" autocomplete="new-password">
+<label for="ea_p2">Confirm new password</label><input id="ea_p2" type="password" autocomplete="new-password"></div>
+<div id="ea_e" class="er" role="alert"></div><button class="pri" id="eas">Update sign-in</button>`;
+$('#bb').onclick=profileHome;
+$('#eps').onclick=()=>{const v={};document.querySelectorAll('#epf [data-p]').forEach(i=>v[i.dataset.p]=i.value.trim());
+if(v.email&&!/^\S+@\S+\.\S+$/.test(v.email))return toast('That email address does not look right.');
+Object.assign(p,v);cvSave(d);toast('Profile saved.');profileHome()};
+$('#eas').onclick=async()=>{const er=m=>{$('#ea_e').textContent=m};er('');
+if(!window.crypto||!crypto.subtle)return er('This needs a secure (https) connection.');
+const n=$('#ea_n').value.trim(),cur=$('#ea_c').value,np=$('#ea_p').value,L=accts(),a=L.find(x=>x.id==ACCT.id),pw=!!np;
+if(!a)return er('Account not found on this device.');
+if(n==a.name&&!pw)return er('Change the username or enter a new password first.');
+if(n.length<2)return er('Username must be at least 2 characters.');
+if(L.some(x=>x.id!=a.id&&x.name.toLowerCase()==n.toLowerCase()))return er('That username is taken.');
+if(pw){if(np.length<6)return er('Password must be at least 6 characters.');if(np!==$('#ea_p2').value)return er('New passwords do not match.')}
+if(!cur||await hashPw(cur,a.salt)!==a.hash)return er('Current password is wrong.');
+a.name=n;if(pw){a.salt=b64(crypto.getRandomValues(new Uint8Array(16)));a.hash=await hashPw(np,a.salt)}
+try{localStorage.setItem(AK,JSON.stringify(L))}catch(x){return er('Could not save on this device.')}
+ACCT=a;toast(pw?'Username and password updated.':'Username updated.');profileHome()}}
+async function wipeAcct(a){const id=a.id,sfx=a.legacy?'':'_'+id;
+clearTimeout(ct);docs=[];SS=[];bks=[];saved=new Map();try{await q}catch(e){}
+try{if(idb){idb.close();idb=null}}catch(e){}
+await new Promise(r=>{try{if(!window.indexedDB)return r();const x=indexedDB.deleteDatabase(a.legacy?'wg':'wg_'+id);x.onsuccess=x.onerror=x.onblocked=()=>r();setTimeout(r,3000)}catch(e){r()}});
+try{if(a.legacy)['wg_docs','wg_bkm','wg_sig','wg_ini',SSK].forEach(k=>localStorage.removeItem(k));
+else Object.keys(localStorage).filter(k=>k.startsWith('wg')&&k.endsWith(sfx)).forEach(k=>localStorage.removeItem(k));
+{const L2=accts().filter(x=>x.id!=id);if(L2.length)localStorage.setItem(AK,JSON.stringify(L2));else localStorage.removeItem(AK)}localStorage.removeItem(SK);sessionStorage.removeItem(SK)}catch(e){}}
+function delAcct(){const e=document.createElement('div');e.className='sh';
+e.innerHTML=`<div role="dialog" aria-modal="true" aria-label="Delete account"><b>Delete account "${esc(ACCT.name)}"?</b>
+<p class="hint" style="margin:0">This permanently deletes every document, spreadsheet, backup, CV, signature and initials saved for this account on this device. It cannot be undone. Use Back up first if you want to keep anything.</p>
+<div class="f" style="margin:0"><label for="da_p" style="margin-top:0">Enter your password to confirm</label><input id="da_p" type="password" autocomplete="current-password" style="color:var(--ink)"></div>
+<div id="da_e" class="er" role="alert" style="margin:0"></div>
+<button id="da_y" style="background:#C62828;border-color:#C62828;color:#fff">Delete account permanently</button><button id="da_x">Cancel</button></div>`;
+const close=()=>e.remove();e.onclick=ev=>{if(ev.target==e)close()};e.onkeydown=ev=>{if(ev.key=='Escape')close()};
+e.querySelector('#da_x').onclick=close;
+e.querySelector('#da_y').onclick=async()=>{const er=m=>{e.querySelector('#da_e').textContent=m},a=accts().find(x=>x.id==ACCT.id);er('');
+if(!window.crypto||!crypto.subtle)return er('This needs a secure (https) connection.');
+if(!a)return er('Account not found on this device.');
+if(!e.querySelector('#da_p').value||await hashPw(e.querySelector('#da_p').value,a.salt)!==a.hash)return er('Wrong password.');
+if(!confirm('Last check: delete "'+a.name+'" and all of its data for good?'))return;
+e.querySelector('#da_y').disabled=true;e.querySelector('#da_y').textContent='Deleting...';
+await wipeAcct(a);location.reload()};
+document.body.appendChild(e);e.querySelector('#da_p').focus()}
 function profileHome(){const d=cvDoc(),c=d.cv,p=c.p,E=esc,nm=p.name||ACCT.name,yrs=cvYrs(p),soon=Date.now()+90*864e5,exp=c.certs.filter(x=>x.x&&new Date(x.x+'T23:59')<soon).length,
 cvs=docs.filter(x=>x.id!=CVID&&/^CV - /.test(x.title||'')).sort((a,b)=>b.at-a.at),
 pr=(id,t,s)=>`<div class="r"><button id="${id}"><b>${t}</b><span>${s}</span></button></div>`,iv=nm.trim().split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'?',
@@ -923,8 +1016,8 @@ $('#app').innerHTML=`<div id="prf"><div class="bar"><button class="ib" id="bb" a
 ${exp?`<p class="er" role="status">${exp} certificate${exp==1?' is':'s are'} expired or expiring within 90 days.</p>`:''}
 <h2>CV</h2>${pr('pcv','My CV','Details, certificates and job log')}${pr('pct','CV templates','10 styles, export PDF or Word')}${cvs.length?cvs.map(x=>`<div class="r"><button data-pc="${x.id}"><b>${E(x.title)}</b><span>Saved ${ago(x.at)}</span></button><button class="ib" data-px="${x.id}" aria-label="Delete ${E(x.title)}">${I(ic.x)}</button></div>`).join(''):'<p class="hint">Saved CVs appear here. In My CV, tap Save a copy.</p>'}
 <h2>Settings</h2>${pr('psg','Signature',sig?'Saved · tap to change':'Not set · tap to draw')}${pr('pin','Initials',ini?'Saved · tap to change':'Not set · tap to draw')}${pr('pth','Appearance',theme=='dark'?'Dark · tap for light':'Light · tap for dark')}${pr('pbk','Back up','PDFs or full backup')}
-<h2>Account</h2>${pr('pso','Sign out','Signed in as '+E(ACCT.name))}</div>`;
-$('#bb').onclick=home;$('#pcv').onclick=cvHome;$('#pct').onclick=cvTpl;$('#pbk').onclick=backupPdfs;$('#pso').onclick=signOut;$('#psg').onclick=()=>sigMenu();$('#pin').onclick=()=>sigMenu('n');$('#pth').onclick=()=>{setTheme(theme=='dark'?'light':'dark');profileHome()};
+<h2>Account</h2>${pr('pep','Edit profile','Name, job title, phone, email, username, password')}${pr('pso','Sign out','Signed in as '+E(ACCT.name))}${pr('pda','Delete account','Permanently remove this account and its data')}</div>`;
+$('#bb').onclick=home;$('#pcv').onclick=cvHome;$('#pct').onclick=cvTpl;$('#pbk').onclick=backupPdfs;$('#pso').onclick=signOut;$('#pep').onclick=editProfile;$('#pda').onclick=delAcct;$('#psg').onclick=()=>sigMenu();$('#pin').onclick=()=>sigMenu('n');$('#pth').onclick=()=>{setTheme(theme=='dark'?'light':'dark');profileHome()};
 document.querySelectorAll('[data-pc]').forEach(b=>b.onclick=()=>open(b.dataset.pc));
 document.querySelectorAll('[data-px]').forEach(b=>b.onclick=async()=>{if(!confirm('Delete this saved CV?'))return;try{await mkBackup('before delete',true)}catch(e){}docs=docs.filter(x=>x.id!=b.dataset.px);save();profileHome()})}
 async function w2p(f){if(!window.DP||!window.PDFLib||!window.html2canvas)return toast('Converter needs the libraries to load once online.');
@@ -940,15 +1033,16 @@ blob=await D.Packer.toBlob(new D.Document({sections:secs}))}
 else{const h=await pdfHtml(buf);if(!h)return toast('No selectable text found. Use "exact look" instead.');const e=document.createElement('div');e.innerHTML=h;blob=await D.Packer.toBlob(wordDoc(e))}
 await dl(blob,f.name.replace(/\.pdf$/i,'')+'.docx')}catch(e){toast('Could not convert this PDF.')}}
 // ---- CV certificates pack
-async function cvPack(){const d=cvDoc(),c=d.cv;if(!window.PDFLib||!window.html2pdf)return toast('Needs the libraries to load once online.');toast('Building CV with certificates...');
-try{const el=document.createElement('div');el.className='ex';el.style.cssText='position:fixed;left:-9999px;top:0;width:703px';el.innerHTML=d.html||cvHtml(c);document.body.appendChild(el);let b;try{b=await html2pdf().set(PDFO(703)).from(el).outputPdf('blob')}finally{el.remove()}
-const out=await PDFLib.PDFDocument.load(await b.arrayBuffer());
-for(const x of c.certs){if(!x.f)continue;const t=x.f.t||'',raw=unb64(x.f.d.split(',')[1]);
-if(/pdf/i.test(t)||/\.pdf$/i.test(x.f.n)){const s=await PDFLib.PDFDocument.load(raw);(await out.copyPages(s,s.getPageIndices())).forEach(p=>out.addPage(p));continue}
+async function cvPack(html){const d=cvDoc(),c=d.cv;if(!window.PDFLib||!window.html2pdf)return toast('Needs the libraries to load once online.');toast('Building CV with certificates...');
+try{const b=await h2pBlob(typeof html=='string'?html:(d.html||cvHtml(c)),703);
+const out=await PDFLib.PDFDocument.load(await b.arrayBuffer()),skipped=[];
+for(const x of c.certs){if(!x.f)continue;try{const t=x.f.t||'',raw=unb64(x.f.d.split(',')[1]);
+if(/pdf/i.test(t)||/\.pdf$/i.test(x.f.n)){const s=await PDFLib.PDFDocument.load(raw,{ignoreEncryption:true});(await out.copyPages(s,s.getPageIndices())).forEach(p=>out.addPage(p));continue}
 let bytes=raw;if(!/png|jpe?g/i.test(t))bytes=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>{const cv=document.createElement('canvas');cv.width=i.width;cv.height=i.height;cv.getContext('2d').drawImage(i,0,0);ok(unb64(cv.toDataURL('image/jpeg',.9).split(',')[1]))};i.onerror=no;i.src=x.f.d});
 const im=/png/i.test(t)?await out.embedPng(bytes):await out.embedJpg(bytes),pg=out.addPage([595,842]),k=Math.min(515/im.width,760/im.height,1);
-pg.drawImage(im,{x:(595-im.width*k)/2,y:(842-im.height*k)/2,width:im.width*k,height:im.height*k})}
-dl(new Blob([await out.save()],{type:'application/pdf'}),((c.p.name||'CV').replace(/[^\w\- ]+/g,'')||'CV')+' - CV with certificates.pdf')}catch(e){toast('Could not build the CV pack.')}}
+pg.drawImage(im,{x:(595-im.width*k)/2,y:(842-im.height*k)/2,width:im.width*k,height:im.height*k})}catch(e){skipped.push(x.n)}}
+await dl(new Blob([await out.save()],{type:'application/pdf'}),((c.p.name||'CV').replace(/[^\w\- ]+/g,'')||'CV')+' - CV with certificates.pdf');
+if(skipped.length)toast('Could not add the file for: '+skipped.join(', ')+'.')}catch(e){toast('Could not build the CV pack.')}}
 let ACCT=null;const AK='wg_accts',SK='wg_sess';
 const accts=()=>{try{return JSON.parse(localStorage.getItem(AK)||'[]')}catch(e){return[]}};
 const hashPw=async(pw,salt)=>{const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveBits']);return b64(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:unb64(salt),iterations:150000},k,256))};
