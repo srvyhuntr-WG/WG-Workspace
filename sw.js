@@ -1,4 +1,4 @@
-const V = 'wg-v40';
+const V = 'wg-v41';
 const SHELL = V + '-shell', LIBS = 'wg-libs-v1', FONTS = 'wg-fonts-v1';
 const KEEP = [SHELL, LIBS, FONTS];
 const SHELL_FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png'];

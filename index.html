@@ -921,7 +921,15 @@ const PDFO=w=>({margin:12,html2canvas:{scale:2,windowWidth:w,x:0,y:0,scrollX:0,s
 async function h2pBlob(html,w){const wrap=document.createElement('div');wrap.style.cssText='position:fixed;left:-9999px;top:0;width:'+w+'px';
 const c=document.createElement('div');c.className='ex';c.style.width=w+'px';c.innerHTML=html;wrap.appendChild(c);document.body.appendChild(wrap);
 const sy=window.scrollY,sx=window.scrollX,o=PDFO(w);o.html2canvas.scrollX=0;o.html2canvas.scrollY=0;window.scrollTo(0,0);
-try{return await html2pdf().set(o).from(c).outputPdf('blob')}finally{wrap.remove();window.scrollTo(sx,sy)}}
+try{if(window.PDFLib){try{const cv=await html2pdf().set(o).from(c).toCanvas().get('canvas');if(cv&&cv.width&&cv.height)return await cutPdf(cv)}catch(x){}}
+return await html2pdf().set(o).from(c).outputPdf('blob')}finally{wrap.remove();window.scrollTo(sx,sy)}}
+async function cutPdf(cv){const P=PDFLib,out=await P.PDFDocument.create(),W=595,H=842,M=34,cw=W-2*M,ph=Math.floor(cv.width*(H-2*M)/cw),g=cv.getContext('2d',{willReadFrequently:true});
+const blank=y=>{const d=g.getImageData(0,y,cv.width,1).data;let n=0;const lim=cv.width*.004;for(let i=0;i<d.length;i+=4)if(d[i]<235||d[i+1]<235||d[i+2]<235){if(++n>lim)return false}return true};
+const rule=y=>{const d=g.getImageData(0,y,cv.width,1).data;let n=0;for(let i=0;i<d.length;i+=4)if(d[i]<170)n++;return n>cv.width*.5};
+let y=0;while(y<cv.height){let e=Math.min(y+ph,cv.height);if(e<cv.height){const lo=Math.max(y+Math.floor(ph*.6),y+1);let r=e;while(r>lo&&!blank(r))r--;if(r>lo){let q=r;while(q>lo&&blank(q-1))q--;if(q>lo&&rule(q-1)){while(q>lo&&rule(q-1))q--;r=q}e=r}}
+if(e<=y)e=Math.min(y+ph,cv.height);const h=e-y,sl=document.createElement('canvas');sl.width=cv.width;sl.height=h;const sc=sl.getContext('2d');sc.fillStyle='#fff';sc.fillRect(0,0,sl.width,h);sc.drawImage(cv,0,y,cv.width,h,0,0,cv.width,h);
+if(h>3){const im=await out.embedJpg(sl.toDataURL('image/jpeg',.95)),pg=out.addPage([W,H]);pg.drawImage(im,{x:M,y:H-M-h*cw/cv.width,width:cw,height:h*cw/cv.width})}y=e}
+if(!out.getPageCount())out.addPage([W,H]);return new Blob([await out.save()],{type:'application/pdf'})}
 async function mkPdf(d){const c=document.createElement('div');c.className=d.src?'cnv':'ex';const w=d.src?834:703;c.style.cssText=d.src?'position:absolute;left:0;top:0;z-index:-1;pointer-events:none':'position:fixed;left:-9999px;top:0;width:'+w+'px';document.body.appendChild(c);
 try{if(d.src){if(!d.imp&&d.vh)c.innerHTML=d.vh;else await wShow(d,c,0);await new Promise(r=>setTimeout(r,250));return await secPdf(c)}return await h2pBlob(d.html,w)}finally{c.remove()}}
 const dtext=d=>{if(!d.html&&!d.vh&&d.ex)return d.ex.slice(0,1200);const e=document.createElement('div');e.innerHTML=d.html||d.vh||'';e.querySelectorAll('style').forEach(x=>x.remove());return(e.textContent||'').replace(/\s+/g,' ').trim().slice(0,1200)};
