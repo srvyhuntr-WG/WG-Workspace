@@ -988,7 +988,16 @@ const secPdf=async root=>{const out=await PDFLib.PDFDocument.create();let secs=[
 if(!secs.length&&root.id=='pg'&&root.textContent.trim()){const w=document.createElement('section');w.className='docx';w.style.cssText='width:794px;min-height:1123px;padding:76px;box-sizing:border-box;background:#fff;color:#111;font:15px/1.5 Calibri,Arial,sans-serif';[...root.childNodes].forEach(n=>{if(n.nodeType==1&&n.tagName=='STYLE')return;w.appendChild(n.cloneNode(true))});secs=[w]}
 const tmp=secs.some(s=>!s.isConnected);if(tmp){const h=document.createElement('div');h.style.cssText='position:absolute;left:-9999px;top:0';secs.forEach(s=>h.appendChild(s));document.body.appendChild(h);secs.host=h}
 try{for(const sec of secs){let cv=null;for(const sc of [2,1.5,1]){try{cv=await html2canvas(sec,{scale:sc,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:-window.scrollY,windowWidth:Math.max(sec.scrollWidth,innerWidth)});if(cv&&cv.width>0&&cv.height>0)break}catch(e){cv=null}}
-if(!cv)throw new Error('canvas');const im=await out.embedJpg(unb64(cv.toDataURL('image/jpeg',.9).split(',')[1])),w=(sec.scrollWidth||sec.offsetWidth)*.75,h=(sec.scrollHeight||sec.offsetHeight)*.75;out.addPage([w,h]).drawImage(im,{x:0,y:0,width:w,height:h});cv.width=cv.height=0}}
+if(!cv)throw new Error('canvas');const sw=sec.scrollWidth||sec.offsetWidth,sh=sec.scrollHeight||sec.offsetHeight,w=sw*.75,h=sh*.75,cs=getComputedStyle(sec),pH=parseFloat(cs.minHeight)||sw*1.4142;
+if(sh>pH*1.12&&pH>200){const k=cv.width/sw,g=cv.getContext('2d',{willReadFrequently:true}),m=Math.min(parseFloat(cs.paddingTop)||48,pH*.15),PH=pH*k,M=m*k,HP=pH*.75;
+const blank=y=>{const d=g.getImageData(0,y,cv.width,1).data;let n=0;const lim=cv.width*.004;for(let i=0;i<d.length;i+=4)if(d[i]<235||d[i+1]<235||d[i+2]<235){if(++n>lim)return false}return true};
+const rule=y=>{const d=g.getImageData(0,y,cv.width,1).data;let n=0;for(let i=0;i<d.length;i+=4)if(d[i]<170)n++;return n>cv.width*.5};
+let y=0,first=1;while(y<cv.height-2){if(!first&&cv.height-y<=M*1.5)break;const cap=Math.floor(first?PH-M:PH-2*M);let e=Math.min(y+cap,cv.height);
+if(e<cv.height){const lo=y+Math.floor(cap*.6);let r=e;while(r>lo&&!blank(r))r--;if(r>lo){let q=r;while(q>lo&&blank(q-1))q--;if(q>lo&&rule(q-1)){while(q>lo&&rule(q-1))q--;r=q}e=r}}
+if(e<=y)e=Math.min(y+cap,cv.height);const hh=e-y,sl=document.createElement('canvas');sl.width=cv.width;sl.height=hh;const sc2=sl.getContext('2d');sc2.fillStyle='#fff';sc2.fillRect(0,0,sl.width,hh);sc2.drawImage(cv,0,y,cv.width,hh,0,0,cv.width,hh);
+const im=await out.embedJpg(unb64(sl.toDataURL('image/jpeg',.9).split(',')[1])),hp=hh/k*.75,pgp=out.addPage([w,HP]);pgp.drawImage(im,{x:0,y:HP-(first?0:m*.75)-hp,width:w,height:hp});sl.width=sl.height=0;y=e;first=0}}
+else{const im=await out.embedJpg(unb64(cv.toDataURL('image/jpeg',.9).split(',')[1]));out.addPage([w,h]).drawImage(im,{x:0,y:0,width:w,height:h})}
+cv.width=cv.height=0}}
 finally{if(secs.host)secs.host.remove()}
 if(!out.getPageCount())throw new Error('no pages');return new Blob([await out.save()],{type:'application/pdf'})};
 function pick(acc,multi,cb){const i=document.createElement('input');i.type='file';i.accept=acc;i.multiple=!!multi;i.style.display='none';document.body.appendChild(i);i.onchange=()=>{const f=[...i.files];i.remove();if(f.length)cb(f)};i.addEventListener('cancel',()=>i.remove());i.click()}
