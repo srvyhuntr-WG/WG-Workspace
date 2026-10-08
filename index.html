@@ -3,12 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Workspace</title>
+<title>WG Workspace</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="icon" href="icon-192.png" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="WG Workspace">
+<meta name="application-name" content="WG Workspace">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#1A47C8">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Public+Sans:wght@400;500;600&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Public+Sans:wght@400;500;600&display=swap"></noscript>
@@ -151,7 +153,7 @@ body{overflow-x:hidden}@supports (overflow:clip){body{overflow-x:clip}}
 /* WG-BIGTILES */
 .tg{gap:14px}.tg .t{min-height:clamp(170px,26vh,240px);gap:10px;padding:18px}.tg .t svg{width:76px;height:76px}.tg .t b{font-size:20px}.tg .t span{font-size:14px}.tg .t:nth-child(3):last-child{grid-column:1/-1}
 .tsw{height:calc(100vh - 210px);height:calc(100dvh - 210px);min-height:420px}.tcd{width:100%;max-width:none;height:100%}.tcd .th2{flex:1;min-height:0;height:auto;padding:18px 18px 0}.tcd .pg2{padding:16px}.tcd .pg2 i{height:7px;margin-bottom:10px}.tcd .pg2 i:first-child{height:10px;margin-bottom:16px}.tcd h2{font-size:22px}.tcd p{flex:0 0 auto;font-size:15px}.tcd .pri{min-height:52px;font-size:17px}
-.av{width:72px;height:72px;border-radius:50%;background:var(--bl);color:#fff;display:grid;place-items:center;font:700 28px 'Bricolage Grotesque',sans-serif;flex:none}
+.av{width:72px;height:72px;border-radius:50%;background:var(--bl);color:#fff;display:grid;place-items:center;font:700 28px 'Bricolage Grotesque',sans-serif;flex:none;overflow:hidden}.av img{width:100%;height:100%;object-fit:cover;display:block}
 .pc{display:flex;gap:14px;align-items:center;background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:16px;margin-bottom:12px}.pc h1{font-size:22px;overflow-wrap:anywhere}.pc p{margin:2px 0 0;color:var(--mut);font-size:14px;overflow-wrap:anywhere}
 .st3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}.st3 div{background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:10px;text-align:center}.st3 b{display:block;font:700 22px 'Bricolage Grotesque',sans-serif}.st3 span{font-size:12px;color:var(--mut)}
 .r>input[type=checkbox]{width:24px;height:24px;min-height:0;flex:none}.r>label{margin:0;flex:1;min-width:0;padding:6px 0;font-weight:400;font-size:16px}
@@ -159,7 +161,7 @@ body{overflow-x:hidden}@supports (overflow:clip){body{overflow-x:clip}}
 </style>
 </head>
 <body>
-<div class="w" id="app" role="main"><div class="top"><img class="logo" src="icon.svg" alt="" width="44" height="44"><h1>Workspace</h1></div><div class="g"><div class="t" style="opacity:.45"></div><div class="t" style="opacity:.45"></div><div class="t" style="opacity:.45"></div><div class="t" style="opacity:.45"></div><div class="t" style="opacity:.45"></div><div class="t" style="opacity:.45"></div><div class="t" style="opacity:.45"></div><div class="t" style="opacity:.45"></div></div></div>
+<div class="w" id="app" role="main"><div class="top"><img class="logo" src="icon.svg" alt="" width="44" height="44"><h1>WG Workspace</h1></div><div class="g"><div class="t" style="opacity:.45"></div><div class="t" style="opacity:.45"></div><div class="t" style="opacity:.45"></div><div class="t" style="opacity:.45"></div><div class="t" style="opacity:.45"></div><div class="t" style="opacity:.45"></div><div class="t" style="opacity:.45"></div><div class="t" style="opacity:.45"></div></div></div>
 <div id="toast" role="status"></div>
 <input type="file" id="fi" class="tp" accept=".docx,.pdf,.json">
 <input type="file" id="fp" class="tp" accept="application/pdf">
@@ -484,7 +486,7 @@ document.body.appendChild(h);try{toast('Creating PDF...');await dl(await secPdf(
 const ago=t=>new Date(t).toLocaleDateString(undefined,{day:'numeric',month:'short'});
 function home(){
 const rc=recDocs();
-$('#app').innerHTML=`<div class="top"><img class="logo" src="icon.svg" alt="" width="44" height="44"><h1>Workspace</h1><button class="ib" id="th" aria-label="Switch light or dark mode">${I(ic.sun)}</button></div>
+$('#app').innerHTML=`<div class="top"><img class="logo" src="icon.svg" alt="" width="44" height="44"><h1>WG Workspace</h1><button class="ib" id="th" aria-label="Switch light or dark mode">${I(ic.sun)}</button></div>
 <div class="g"><button class="t p" id="nw">${I(ic.doc)}<b>New document</b><span>Blank Word-style page</span></button><button class="t" id="im">${I(ic.up)}<b>Word Docs</b><span>Open, edit, export .docx</span></button><button class="t" id="ss">${I(icSs)}<b>Spreadsheets</b><span>Open, edit, export .xlsx</span></button><button class="t" id="sd">${I(ic.sh)}<b>Share Docs</b><span>Email, WhatsApp, PDF</span></button><button class="t" id="op">${I(ic.pen)}<b>Open PDF</b><span>View, sign, highlight</span></button><button class="t" id="cv">${I(ic.cv)}<b>Converter</b><span>Any file, auto-detected</span></button><button class="t" id="mg">${I(ic.mg)}<b>Merge PDFs</b><span>Combine in order</span></button><button class="t" id="bk">${I(ic.bk)}<b>Back up</b><span>As PDFs or full backup</span></button><button class="t p c" id="mycv" aria-label="My CV">${IB(ic.cvp)}<b>CV</b></button><button class="t p c" id="tpl" aria-label="Doc Templates">${IB(ic.doc)}<b>Doc Templates</b></button></div>
 <h2>Recent</h2>${rc.length?'<div class="strip">'+rc.slice(0,SN).map(stripCard).join('')+'</div>'+(rc.length>1?'<p class="shn">Swipe for more</p>':'')+(rc.length>RN?`<button class="sec" id="sa" style="width:100%">See all ${rc.length} documents</button>`:'')+`<button class="yl" id="rclr" style="width:100%">Clear all recents</button>`:'<div class="em">No documents yet. Start from a template or create a new document.</div>'}${bkHtml()}`;
 $('#th').onclick=()=>{setTheme(theme=='dark'?'light':'dark')};acctBtn();$('#mycv').onclick=cvHome;$('#tpl').onclick=tplHome;
@@ -507,7 +509,7 @@ const sw=$('#tsw'),ds=[...document.querySelectorAll('#tdt i')];
 sw.onscroll=()=>{const c=[...sw.children];let b=0,m=1e9;const x=sw.scrollLeft;c.forEach((e,i)=>{const d=Math.abs(e.offsetLeft-16-x);if(d<m){m=d;b=i}});if(x+sw.clientWidth>=sw.scrollWidth-4)b=c.length-1;ds.forEach((d,i)=>d.classList.toggle('on',i==b))}}
 // ---- Template form
 function form(k){const t=T[k];
-$('#app').innerHTML=`<div class="bar"><button class="ib" id="bb" aria-label="Back">${I(ic.back)}</button><h1 style="font-size:22px">${t.n}</h1></div><div class="f">${t.f.map(([l,ty,v],i)=>`<label for="f${i}">${l}</label>${ty=='ta'?`<textarea id="f${i}"></textarea>`:`<input id="f${i}" type="${ty||'text'}" ${ty=='number'?'step="any" inputmode="decimal"':''} value="${esc(v||'')}">`}`).join('')}
+$('#app').innerHTML=`<div class="bar"><button class="ib" id="bb" aria-label="Back">${I(ic.back)}</button><h1 style="font-size:22px">${t.n}</h1></div><div class="f">${t.f.map(([l,ty,v],i)=>`<label for="f${i}">${l}</label>${ty=='ta'?`<textarea id="f${i}"></textarea>`:`<input id="f${i}" type="${ty||'text'}" ${ty=='number'?'step="any" inputmode="decimal"':''} value="${esc(v||techFill(l))}">`}`).join('')}
 ${t.t.map((tb,j)=>`<h2>${tb.k}</h2><div class="sc"><table id="tb${j}"><tr>${tb.c.map(c=>`<th>${c}</th>`).join('')}</tr>${Array.from({length:tb.n},()=>row(tb.c)).join('')}</table></div><button class="sec" data-a="${j}">Add row</button>`).join('')}
 ${CVM[k]?`<label style="display:flex;align-items:center;gap:10px;margin-top:18px"><input type="checkbox" id="cvlog" checked style="width:24px;height:24px;min-height:0;flex:none">Add this job to my CV</label>`:''}<div id="er" role="alert" class="er"></div><button class="pri" id="go">Create document</button></div>`;
 $('#bb').onclick=tplHome;
@@ -553,18 +555,24 @@ cal:v=>({type:'Tank calibration',date:v[15],client:v[1],site:cj([v[2],v[0]&&'Tan
 hse:v=>({type:'HSE',date:v[0],client:'',site:cj([v[1],v[2]]),details:'Toolbox talk: '+(v[4]||'')}),
 mt:v=>({type:'Other',date:v[11],client:v[0],site:cj([v[1],v[2]]),details:(v[3]||'MT / PT')+' inspection'}),
 dwr:v=>({type:'Other',date:v[0],client:v[1],site:v[2],details:'Daily job report'+(v[3]?' '+v[3]:'')})};
+const tp=()=>((docs.find(x=>x.id==CVID)||{}).cv||{}).p||{};
+const techFill=l=>{const p=tp(),k=String(l).trim().toLowerCase();
+if(/^(technician|inspector|calibrated by|prepared by|surveyor|operator|engineer|team leader|reported by)$/.test(k))return p.name||'';
+if(/^certification no\.?$/.test(k))return p.certno||'';
+if(/^(company|contractor|service company|employer)$/.test(k))return p.employer||'';return ''};
+const techX=x=>{const p=tp();if(!p.name)return x;const s=[p.name,p.certno].filter(Boolean).join(', ');return x.replace(/(Technician|Inspector): _{6,}/g,(m,r)=>r+': ____________ ('+esc(s)+')')};
 const row=c=>`<tr>${c.map(x=>`<td><input aria-label="${x}"></td>`).join('')}</tr>`;
 /*UT-START*/
 const utRow=(prev,cur,tmin,years)=>{const p=parseFloat(prev),c=parseFloat(cur),tm=parseFloat(tmin);if(isNaN(p)||isNaN(c))return['','',''];const loss=p-c,l=Math.abs(loss)<.005?'0.00':loss.toFixed(2);let cr='',rl='';if(years>0&&loss>=0){const rate=loss/years;cr=rate.toFixed(3);if(rate>0&&!isNaN(tm))rl=Math.max(0,(c-tm)/rate).toFixed(1)}return[l,cr,rl]};
 /*UT-END*/
-function gen(k,v,tabs){const t=T[k];let h=`<div class="hd">Workspace</div><h1>${t.n}</h1><table>${t.f.filter((f,i)=>f[1]!='ta'&&f[0]).reduce((a,f,i,arr)=>i%2?a:a+`<tr><th>${f[0]}</th><td>${esc(v[t.f.indexOf(f)])}</td>${arr[i+1]?`<th>${arr[i+1][0]}</th><td>${esc(v[t.f.indexOf(arr[i+1])])}</td>`:'<td></td><td></td>'}</tr>`,'')}</table>`;
+function gen(k,v,tabs){const t=T[k];let h=`<div class="hd">WG Workspace</div><h1>${t.n}</h1><table>${t.f.filter((f,i)=>f[1]!='ta'&&f[0]).reduce((a,f,i,arr)=>i%2?a:a+`<tr><th>${f[0]}</th><td>${esc(v[t.f.indexOf(f)])}</td>${arr[i+1]?`<th>${arr[i+1][0]}</th><td>${esc(v[t.f.indexOf(arr[i+1])])}</td>`:'<td></td><td></td>'}</tr>`,'')}</table>`;
 t.f.forEach((f,i)=>{if(f[1]=='ta')h+=`<p><b>${f[0]}</b><br>${esc(v[i]).replace(/\n/g,'<br>')||'&nbsp;'}</p>`});
 t.t.forEach((tb,j)=>{let cols=[...tb.c],rows=tabs[j].map(r=>[...r]);
 if(k=='ut'){const d1=new Date(v[12]),d2=new Date(v[13]),y=(d2-d1)/31557600000,tm=parseFloat(v[14]);cols.push('Loss (mm)','Rate (mm/yr)','Remaining life (yr)');
 rows=rows.map(r=>[...r,...utRow(r[3],r[4],v[14],y)])}
 if(tb.calc){cols.push(...tb.xc);rows=rows.map(r=>[...r,...tb.calc(r,v)])}
 h+=`<h2>${tb.k}</h2><table><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr>${(rows.length?rows:[cols.map(()=>'')]).map(r=>`<tr>${cols.map((c,i)=>`<td>${esc(r[i])||'&nbsp;'}</td>`).join('')}</tr>`).join('')}</table>`});
-return h+t.x}
+return h+techX(t.x)}
 // ---- My CV: profile, certifications and a job log. The CV document rebuilds itself as jobs are logged.
 const CVID='cv',JT=['Pipeline UT','Tank calibration','HSE','Other'];let cvEdit=null,ct;
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
@@ -576,7 +584,7 @@ const dmy=s=>{const t=new Date(s+'T00:00');return isNaN(t)?esc(s||''):t.toLocale
 const mon=s=>{const t=new Date(s+'T00:00');return isNaN(t)?esc(s||''):t.toLocaleDateString(undefined,{month:'short',year:'numeric'})};
 const cvLines=s=>String(s||'').split(/\n/).map(x=>x.trim()).filter(Boolean);
 const cvHtml=c=>{const p=c.p,E=esc,J=[...c.jobs].sort((a,b)=>(b.date||'').localeCompare(a.date||'')),yrs=cvYrs(p);
-let h=`<div class="hd">Curriculum vitae</div><h1>${E(p.name||'Your name')}</h1><p>${[p.title,p.loc,p.phone,p.email].filter(Boolean).map(E).join(' · ')}</p>`;
+let h=`<div class="hd">Curriculum vitae</div>${p.photo&&p.phOn!='0'?`<img class="cvph" src="${p.photo}" alt="" width="96" height="96">`:''}<h1>${E(p.name||'Your name')}</h1><p>${[p.title,p.loc,p.phone,p.email].filter(Boolean).map(E).join(' · ')}</p>`;
 if(p.summary)h+=`<h2>Profile</h2><p>${E(p.summary).replace(/\n/g,'<br>')}</p>`;
 if(c.certs.length)h+=`<h2>Certifications</h2><table><tr><th>Certification</th><th>Number / issuer</th><th>Expires</th></tr>${[...c.certs].sort((a,b)=>(a.x||'9').localeCompare(b.x||'9')).map(x=>`<tr><td>${E(x.n)}${x.f?' (copy attached)':''}</td><td>${E(x.i)||'&nbsp;'}</td><td>${x.x?dmy(x.x):'&nbsp;'}</td></tr>`).join('')}</table>`;
 if(cvLines(p.quals).length)h+=`<h2>Qualifications</h2><ul>${cvLines(p.quals).map(x=>`<li>${E(x)}</li>`).join('')}</ul>`;
@@ -1082,7 +1090,7 @@ const CVT=[['Classic',"Georgia,'Times New Roman',serif",'#eeeeee','#111','text-a
 ['Compact',"'Arial Narrow',Arial,sans-serif",'#dddddd','#111','font-size:22px;margin:0','font-size:12px;background:#eee;padding:2px 6px;margin:10px 0 4px'],
 ['Tech Mono',"'Courier New',monospace",'#2E7D32','#fff','color:#2E7D32;font-size:24px;margin:0','color:#2E7D32;border-bottom:1px dashed #2E7D32;font-size:14px;margin:14px 0 6px'],
 ['Orange Edge','Arial,sans-serif','#EF6C00','#fff','border-left:10px solid #EF6C00;padding-left:12px;font-size:28px;margin:0 0 8px','color:#EF6C00;text-transform:uppercase;font-size:13px;letter-spacing:1px;margin:16px 0 6px']];
-const cvCss=i=>{const[,f,b,k,h1,h2]=CVT[i];return `.cvt{font:13px/1.5 ${f};color:#222;background:#fff}.cvt .hd{display:none}.cvt h1{${h1}}.cvt h2{${h2}}.cvt p{margin:4px 0}.cvt ul{margin:4px 0;padding-left:20px}.cvt table{border-collapse:collapse;width:100%}.cvt td,.cvt th{border:1px solid #ccc;padding:4px 6px;font-size:12px;text-align:left;vertical-align:top}.cvt th{background:${b};color:${k}}`};
+const cvCss=i=>{const[,f,b,k,h1,h2]=CVT[i];return `.cvt{font:13px/1.5 ${f};color:#222;background:#fff}.cvt .hd{display:none}.cvt img.cvph{float:right;width:96px;height:96px;object-fit:cover;border-radius:50%;margin:0 0 8px 14px}.cvt h1{${h1}}.cvt h2{${h2}}.cvt p{margin:4px 0}.cvt ul{margin:4px 0;padding-left:20px}.cvt table{border-collapse:collapse;width:100%}.cvt td,.cvt th{border:1px solid #ccc;padding:4px 6px;font-size:12px;text-align:left;vertical-align:top}.cvt th{background:${b};color:${k}}`};
 let cvT=0;
 function cvTpl(){const d=cvDoc(),c=d.cv,p=c.p,full=()=>'<style>'+cvCss(cvT)+'</style><div class="cvt">'+cvHtml(c)+'</div>',nm=()=>((p.name||'CV').replace(/[^\w\- ]+/g,'')||'CV')+' - '+CVT[cvT][0];
 $('#app').innerHTML=`<div class="bar"><button class="ib" id="bb" aria-label="Back">${I(ic.back)}</button><h1 style="font-size:22px">CV templates</h1></div><div class="tb" id="cvtb">${CVT.map((t,i)=>`<button data-t="${i}" aria-pressed="${i==cvT}">${t[0]}</button>`).join('')}</div><div style="border:1px solid var(--ln);border-radius:6px;overflow:hidden;background:#fff"><div id="cvpv" style="width:703px;zoom:.5;padding:20px;box-sizing:border-box;background:#fff;color:#111"></div></div><div class="act"><button id="cvw">Word</button><button class="y" id="cvx">PDF</button></div><button class="sec" id="cvk" style="width:100%;margin-top:8px">PDF with certificates attached</button><p class="hint">Built from your CV details, certificates and job log. Update them in My CV and every style updates. Word keeps the content and structure; colours and fonts are PDF-only.</p>`;
@@ -1111,23 +1119,55 @@ else{const o=await PDFLib.PDFDocument.create();for(const[,b]of out){const s=awai
 toast(out.length+' PDF'+(out.length==1?'':'s')+' saved'+(bad.length?'. Skipped: '+bad.slice(0,3).join(', ')+(bad.length>3?'...':''):'.'))}
 catch(e){toast('Backup failed. Try fewer documents at a time.')}finally{run=0}};
 $('#bz').onclick=()=>build('zip');$('#b1').onclick=()=>build('one')}
+// ---- Recovery code: a second credential (hash only) that lets a forgotten password be replaced without losing data
+const RC_AL='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const rcNew=()=>{let s='';crypto.getRandomValues(new Uint8Array(20)).forEach(x=>s+=RC_AL[x%32]);return s.match(/.{5}/g).join('-')};
+const rcNorm=s=>String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+async function rcSet(a){const code=rcNew(),L=accts(),x=L.find(y=>y.id==a.id);if(!x)throw new Error('no account');
+x.rs=b64(crypto.getRandomValues(new Uint8Array(16)));x.rh=await hashPw(rcNorm(code),x.rs);localStorage.setItem(AK,JSON.stringify(L));if(ACCT&&ACCT.id==x.id)ACCT=x;return code}
+function rcShow(code,done){const e=document.createElement('div');e.className='sh';
+e.innerHTML=`<div role="dialog" aria-modal="true" aria-label="Recovery code"><b>Your recovery code</b><p class="hint" style="margin:0">If you forget your password, this code lets you set a new one and keep your documents. It is shown only once and works once. Write it down or save it outside this app. Anyone who has it can reset your password.</p><div style="font:700 20px/1.4 ui-monospace,Menlo,monospace;letter-spacing:1px;text-align:center;padding:14px;border:1px dashed var(--ln);border-radius:12px;user-select:all;overflow-wrap:anywhere">${code}</div><button id="rc_cp">Copy code</button><button class="y" id="rc_ok">I have saved it</button></div>`;
+e.querySelector('#rc_cp').onclick=()=>{try{navigator.clipboard.writeText(code).then(()=>toast('Code copied.'),()=>prompt('Copy your recovery code:',code))}catch(x){prompt('Copy your recovery code:',code)}};
+e.querySelector('#rc_ok').onclick=()=>{e.remove();done&&done()};document.body.appendChild(e)}
+function recoveryMake(){const e=document.createElement('div');e.className='sh';
+e.innerHTML=`<div role="dialog" aria-modal="true" aria-label="Recovery code"><b>${ACCT.rh?'Make a new recovery code':'Create a recovery code'}</b><p class="hint" style="margin:0">${ACCT.rh?'Your old recovery code will stop working. ':''}Enter your password to continue.</p><div class="f" style="margin:0"><label for="rm_p" style="margin-top:0">Password</label><input id="rm_p" type="password" autocomplete="current-password" style="color:var(--ink)"></div><div id="rm_e" class="er" role="alert" style="margin:0"></div><button class="y" id="rm_y">Continue</button><button id="rm_x">Cancel</button></div>`;
+const close=()=>e.remove(),er=m=>{e.querySelector('#rm_e').textContent=m};e.onclick=ev=>{if(ev.target==e)close()};e.onkeydown=ev=>{if(ev.key=='Escape')close()};e.querySelector('#rm_x').onclick=close;
+e.querySelector('#rm_y').onclick=async()=>{er('');if(!window.crypto||!crypto.subtle)return er('This needs a secure (https) connection.');
+const a=accts().find(x=>x.id==ACCT.id),pw=e.querySelector('#rm_p').value;if(!a)return er('Account not found on this device.');
+if(!pw||await hashPw(pw,a.salt)!==a.hash)return er('Wrong password.');
+let code;try{code=await rcSet(a)}catch(x){return er('Could not save on this device.')}
+close();rcShow(code,()=>{if($('#prf'))profileHome()})};
+document.body.appendChild(e);e.querySelector('#rm_p').focus()}
 // ---- Profile
 const signOut=()=>{if(confirm('Sign out of '+ACCT.name+'?')){try{localStorage.removeItem(SK);sessionStorage.removeItem(SK)}catch(e){}location.reload()}};
 const sigMenu=k=>{const ni=k=='n',has=ni?ini:sig,key=(ni?'wg_ini':'wg_sig')+UK,w=ni?'initials':'signature',
 o=[[(has?'Draw new ':'Draw your ')+w,'Used when you sign PDFs',()=>{pad(k);const t=setInterval(()=>{if(!document.querySelector('.sh')){clearInterval(t);if($('#prf'))profileHome()}},300)},1]];
 if(has)o.push(['Remove '+w,'Delete it from this device',()=>{if(ni)ini='';else sig='';try{localStorage.removeItem(key)}catch(e){}profileHome()}]);sheet(ni?'Initials':'Signature',o)};
+const initials=n=>String(n||'').trim().split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'?';
+const avHtml=(p,n)=>p.photo?`<img src="${p.photo}" alt="">`:esc(initials(n));
+const photoFile=f=>new Promise((ok,no)=>{const u=URL.createObjectURL(f),i=new Image();i.onload=()=>{const m=Math.min(i.naturalWidth,i.naturalHeight);if(!m){URL.revokeObjectURL(u);return no()}const c=document.createElement('canvas');c.width=c.height=320;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,320,320);g.drawImage(i,(i.naturalWidth-m)/2,(i.naturalHeight-m)/2,m,m,0,0,320,320);URL.revokeObjectURL(u);ok(c.toDataURL('image/jpeg',.85))};i.onerror=()=>{URL.revokeObjectURL(u);no()};i.src=u});
 function editProfile(){const d=cvDoc(),c=d.cv,p=c.p,E=esc,
 inp=(k,l,t)=>`<label for="ep_${k}">${l}</label><input id="ep_${k}" data-p="${k}" type="${t||'text'}" value="${E(p[k]||'')}" autocomplete="off">`;
 $('#app').innerHTML=`<div class="bar"><button class="ib" id="bb" aria-label="Back">${I(ic.back)}</button><h1 style="font-size:22px">Edit profile</h1></div>
-<h2>Your details</h2><div class="f" id="epf">${inp('name','Full name')}${inp('title','Job title')}${inp('loc','Location')}${inp('phone','Phone','tel')}${inp('email','Email','email')}</div>
-<p class="hint">These details also appear on your CV.</p><button class="pri" id="eps" style="margin-top:6px">Save details</button>
+<h2>Photo</h2><div class="pc" style="margin-bottom:6px"><div class="av" id="eph">${avHtml(p,p.name||ACCT.name)}</div><div style="display:flex;flex-direction:column;gap:8px;flex:1;min-width:0"><button class="sec" id="epc">Choose photo</button><button class="sec" id="epm">Take photo</button><button class="sec" id="epr" style="display:${p.photo?'':'none'}">Remove photo</button></div></div><input type="file" id="epfi" accept="image/*" hidden><input type="file" id="epfc" accept="image/*" capture="user" hidden>
+<label style="display:flex;gap:10px;align-items:center;margin:6px 0"><input type="checkbox" id="epsh" ${p.phOn!='0'?'checked':''}>Show photo on my CV</label>
+<h2>Your details</h2><div class="f" id="epf">${inp('name','Full name')}${inp('title','Job title')}${inp('loc','Location')}${inp('phone','Phone','tel')}${inp('email','Email','email')}${inp('since','Working in the industry since (year)','number')}</div>
+<p class="hint">These details also appear on your CV.</p>
+<h2>Technician details</h2><div class="f" id="ept">${inp('employer','Employer / company')}${inp('level','Certification body and level (e.g. PCN UT Level 2)')}${inp('certno','Certification / ID number')}</div>
+<p class="hint">Your name and certification number fill in automatically when you start a report, and print under the sign-off line.</p><button class="pri" id="eps" style="margin-top:6px">Save details</button>
 <h2>Sign-in</h2><div class="f"><label for="ea_n">Username</label><input id="ea_n" type="text" value="${E(ACCT.name)}" autocapitalize="none" autocomplete="username">
 <label for="ea_c">Current password (needed to change username or password)</label><input id="ea_c" type="password" autocomplete="current-password">
 <label for="ea_p">New password (leave empty to keep the current one)</label><input id="ea_p" type="password" autocomplete="new-password">
 <label for="ea_p2">Confirm new password</label><input id="ea_p2" type="password" autocomplete="new-password"></div>
 <div id="ea_e" class="er" role="alert"></div><button class="pri" id="eas">Update sign-in</button>`;
 $('#bb').onclick=profileHome;
-$('#eps').onclick=()=>{const v={};document.querySelectorAll('#epf [data-p]').forEach(i=>v[i.dataset.p]=i.value.trim());
+const setPh=async f=>{if(!f)return;try{p.photo=await photoFile(f);if(p.phOn==null)p.phOn='1';cvSave(d);$('#eph').innerHTML=avHtml(p,p.name||ACCT.name);$('#epr').style.display='';$('#epsh').checked=p.phOn!='0';toast('Photo saved.')}catch(e){toast('Could not read that photo.')}};
+$('#epc').onclick=()=>$('#epfi').click();$('#epm').onclick=()=>$('#epfc').click();
+$('#epfi').onchange=$('#epfc').onchange=e=>{const f=e.target.files[0];e.target.value='';setPh(f)};
+$('#epr').onclick=()=>{delete p.photo;cvSave(d);$('#eph').innerHTML=avHtml(p,p.name||ACCT.name);$('#epr').style.display='none';toast('Photo removed.')};
+$('#epsh').onchange=e=>{p.phOn=e.target.checked?'1':'0';cvSave(d)};
+$('#eps').onclick=()=>{const v={};document.querySelectorAll('#epf [data-p],#ept [data-p]').forEach(i=>v[i.dataset.p]=i.value.trim());
+if(v.since&&!(+v.since>1950&&+v.since<=new Date().getFullYear()))return toast('Enter a year between 1951 and '+new Date().getFullYear()+'.');
 if(v.email&&!/^\S+@\S+\.\S+$/.test(v.email))return toast('That email address does not look right.');
 Object.assign(p,v);cvSave(d);toast('Profile saved.');profileHome()};
 $('#eas').onclick=async()=>{const er=m=>{$('#ea_e').textContent=m};er('');
@@ -1170,13 +1210,13 @@ cvs=docs.filter(x=>x.id!=CVID&&/^CV - /.test(x.title||'')).sort((a,b)=>b.at-a.at
 pr=(id,t,s)=>`<div class="r"><button id="${id}"><b>${t}</b><span>${s}</span></button></div>`,iv=nm.trim().split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'?',
 ln=[[p.title,p.loc].filter(Boolean).join(' · '),p.phone,p.email].filter(Boolean);
 $('#app').innerHTML=`<div id="prf"><div class="bar"><button class="ib" id="bb" aria-label="Back">${I(ic.back)}</button><h1 style="font-size:22px">Profile</h1></div>
-<div class="pc"><div class="av" aria-hidden="true">${E(iv)}</div><div style="min-width:0"><h1>${E(nm)}</h1>${ln.length?ln.map(x=>`<p>${E(x)}</p>`).join(''):'<p>Add your details under My CV.</p>'}</div></div>
+<div class="pc"><div class="av" aria-hidden="true">${avHtml(p,nm)}</div><div style="min-width:0"><h1>${E(nm)}</h1>${ln.length?ln.map(x=>`<p>${E(x)}</p>`).join(''):'<p>Add your details under My CV.</p>'}</div></div>
 <div class="st3"><div><b>${c.jobs.length}</b><span>Jobs logged</span></div><div><b>${yrs||'-'}</b><span>Years in industry</span></div><div><b>${c.certs.length}</b><span>Certificates</span></div></div>
 ${exp?`<p class="er" role="status">${exp} certificate${exp==1?' is':'s are'} expired or expiring within 90 days.</p>`:''}
 <h2>CV</h2>${pr('pcv','My CV','Details, certificates and job log')}${pr('pct','CV templates','10 styles, export PDF or Word')}${cvs.length?cvs.map(x=>`<div class="r"><button data-pc="${x.id}"><b>${E(x.title)}</b><span>Saved ${ago(x.at)}</span></button><button class="ib" data-px="${x.id}" aria-label="Delete ${E(x.title)}">${I(ic.x)}</button></div>`).join(''):'<p class="hint">Saved CVs appear here. In My CV, tap Save a copy.</p>'}
 <h2>Settings</h2>${pr('psg','Signature',sig?'Saved · tap to change':'Not set · tap to draw')}${pr('pin','Initials',ini?'Saved · tap to change':'Not set · tap to draw')}${pr('pth','Appearance',theme=='dark'?'Dark · tap for light':'Light · tap for dark')}${pr('pbk','Back up','PDFs or full backup')}
-<h2>Account</h2>${pr('pep','Edit profile','Name, job title, phone, email, username, password')}${pr('pso','Sign out','Signed in as '+E(ACCT.name))}${pr('pda','Delete account','Permanently remove this account and its data')}</div>`;
-$('#bb').onclick=home;$('#pcv').onclick=cvHome;$('#pct').onclick=cvTpl;$('#pbk').onclick=backupPdfs;$('#pso').onclick=signOut;$('#pep').onclick=editProfile;$('#pda').onclick=delAcct;$('#psg').onclick=()=>sigMenu();$('#pin').onclick=()=>sigMenu('n');$('#pth').onclick=()=>{setTheme(theme=='dark'?'light':'dark');profileHome()};
+<h2>Account</h2>${ACCT.rh?'':'<p class="er" role="status">Set a recovery code so a forgotten password does not lock you out of your documents.</p>'}${pr('pep','Edit profile','Photo, details, technician info, username, password')}${pr('prc','Recovery code',ACCT.rh?'Set · tap to make a new one':'Not set · tap to create')}${pr('pso','Sign out','Signed in as '+E(ACCT.name))}${pr('pda','Delete account','Permanently remove this account and its data')}</div>`;
+$('#bb').onclick=home;$('#pcv').onclick=cvHome;$('#pct').onclick=cvTpl;$('#pbk').onclick=backupPdfs;$('#pso').onclick=signOut;$('#pep').onclick=editProfile;$('#prc').onclick=recoveryMake;$('#pda').onclick=delAcct;$('#psg').onclick=()=>sigMenu();$('#pin').onclick=()=>sigMenu('n');$('#pth').onclick=()=>{setTheme(theme=='dark'?'light':'dark');profileHome()};
 document.querySelectorAll('[data-pc]').forEach(b=>b.onclick=()=>open(b.dataset.pc));
 document.querySelectorAll('[data-px]').forEach(b=>b.onclick=async()=>{if(!confirm('Delete this saved CV?'))return;try{await mkBackup('before delete',true)}catch(e){}docs=docs.filter(x=>x.id!=b.dataset.px);save();profileHome()})}
 async function w2p(f){if(!window.DP||!window.PDFLib||!window.html2canvas)return toast('Converter needs the libraries to load once online.');
@@ -1208,6 +1248,28 @@ const hashPw=async(pw,salt)=>{const k=await crypto.subtle.importKey('raw',new Te
 function useAcct(a,keep){ACCT=a;DB=a.legacy?'wg':'wg_'+a.id;K=a.legacy?'wg_docs':'wg_docs_'+a.id;UK=a.legacy?'':'_'+a.id;try{sig=localStorage.getItem('wg_sig'+UK)||'';ini=localStorage.getItem('wg_ini'+UK)||'';if(keep)localStorage.setItem(SK,a.id);else{localStorage.removeItem(SK);sessionStorage.setItem(SK,a.id)}}catch(e){}
 const e=$('#au');e&&e.remove();initDocs().then(()=>loadBks(1)).then(home).then(()=>setTimeout(autoBackup,4000))}
 function acctBtn(){const t=document.querySelector('.top');if(!t||!ACCT)return;const b=document.createElement('button');b.className='ib';b.setAttribute('aria-label','Profile: '+ACCT.name);b.title='Profile';b.innerHTML=I(ic.cvp);b.onclick=profileHome;t.insertBefore(b,$('#th'))}
+function authForgot(a0){const e=$('#au');
+e.innerHTML=`<div class="cd" role="dialog" aria-label="Forgot password"><h1>Forgot password</h1><p>Use your recovery code to set a new password and keep your documents.</p>
+<form id="ff"><label for="fg_n">Username</label><input id="fg_n" type="text" autocapitalize="none" autocomplete="username" value="${esc(a0?a0.name:'')}">
+<label for="fg_c">Recovery code</label><input id="fg_c" type="text" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="XXXXX-XXXXX-XXXXX-XXXXX">
+<label for="fg_p">New password</label><input id="fg_p" type="password" autocomplete="new-password">
+<label for="fg_p2">Confirm new password</label><input id="fg_p2" type="password" autocomplete="new-password">
+<div id="fg_e" class="er" role="alert"></div><button class="pri" type="submit">Set new password</button></form>
+<button class="lk" id="fg_w">No recovery code? Erase this account and start over</button><button class="lk" id="fg_b">Back to sign in</button></div>`;
+const er=m=>{$('#fg_e').textContent=m},find=()=>accts().find(x=>x.name.toLowerCase()==$('#fg_n').value.trim().toLowerCase());
+$('#fg_b').onclick=()=>authUi('in');
+$('#ff').onsubmit=async ev=>{ev.preventDefault();er('');if(!window.crypto||!crypto.subtle)return er('This needs a secure (https) connection.');
+const L=accts(),a=L.find(x=>x.name.toLowerCase()==$('#fg_n').value.trim().toLowerCase()),np=$('#fg_p').value;
+if(!a)return er('No account with that username on this device.');
+if(!a.rh)return er('This account has no recovery code. You can only erase it and start over.');
+if(np.length<6)return er('Password must be at least 6 characters.');if(np!==$('#fg_p2').value)return er('New passwords do not match.');
+if(await hashPw(rcNorm($('#fg_c').value),a.rs)!==a.rh)return er('That recovery code is not right.');
+a.salt=b64(crypto.getRandomValues(new Uint8Array(16)));a.hash=await hashPw(np,a.salt);delete a.rh;delete a.rs;
+try{localStorage.setItem(AK,JSON.stringify(L))}catch(x){return er('Could not save on this device.')}
+authUi('in');toast('Password changed. Sign in, then make a new recovery code in Profile.')};
+$('#fg_w').onclick=async()=>{er('');const a=find();if(!a)return er('Enter the username of the account to erase.');
+const t=prompt('This permanently deletes every document, CV, backup and signature saved for "'+a.name+'" on this device. It cannot be undone. Type ERASE to confirm.');
+if(t===null||t.trim().toUpperCase()!=='ERASE')return;$('#fg_w').disabled=true;$('#fg_w').textContent='Erasing...';await wipeAcct(a);location.reload()}}
 function authUi(mode){const list=accts();mode=mode||(list.length?'in':'up');const first=!list.length,pickList=mode=='in'&&list.length>0;
 let e=$('#au');if(!e){e=document.createElement('div');e.id='au';document.body.appendChild(e)}
 e.innerHTML=`<div class="cd" role="dialog" aria-label="Sign in"><img src="icon.svg" width="64" height="64" alt=""><h1>${mode=='up'?'Create account':'Sign in'}</h1><p>${mode=='up'?(first?'Your existing documents will move into this first account.':'Each account has its own private documents.'):'Choose your account.'}</p>
@@ -1215,15 +1277,15 @@ ${pickList?`<div class="ls">${list.map(a=>`<button data-a="${a.id}">${esc(a.name
 <form id="af" style="${pickList?'display:none':''}"><label for="an">Username</label><input id="an" type="text" autocomplete="username" autocapitalize="none">
 <label for="ap">Password</label><input id="ap" type="password" autocomplete="${mode=='up'?'new-password':'current-password'}">${mode=='up'?'<label for="ap2">Confirm password</label><input id="ap2" type="password" autocomplete="new-password">':''}
 <label class="ac"><input type="checkbox" id="ak" checked>Keep me signed in on this device</label><div id="ae" class="er" role="alert"></div><button class="pri" type="submit">${mode=='up'?'Create account':'Sign in'}</button></form>
-<button class="lk" id="sw" style="${mode=='in'||list.length?'':'display:none'}">${mode=='up'?'I already have an account':'Create a new account'}</button></div>`;
+<button class="lk" id="sw" style="${mode=='in'||list.length?'':'display:none'}">${mode=='up'?'I already have an account':'Create a new account'}</button><button class="lk" id="fg" style="${mode=='in'?'':'display:none'}">Forgot password?</button></div>`;
 const err=m=>{$('#ae').textContent=m};let pick=null;
 e.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{pick=list.find(a=>a.id==b.dataset.a);e.querySelector('.ls').style.display='none';$('#af').style.display='block';$('#an').value=pick.name;$('#an').readOnly=true;$('#ap').focus()});
-$('#sw').onclick=()=>authUi(mode=='up'?'in':'up');
+$('#sw').onclick=()=>authUi(mode=='up'?'in':'up');$('#fg').onclick=()=>authForgot(pick||list.find(x=>x.name.toLowerCase()==$('#an').value.trim().toLowerCase()));
 $('#af').onsubmit=async ev=>{ev.preventDefault();err('');if(!window.crypto||!crypto.subtle)return err('Sign in needs a secure (https) connection.');
 const n=$('#an').value.trim(),p=$('#ap').value,keep=$('#ak').checked,L=accts();
 if(mode=='up'){if(n.length<2)return err('Username must be at least 2 characters.');if(L.some(a=>a.name.toLowerCase()==n.toLowerCase()))return err('That username is taken.');
 if(p.length<6)return err('Password must be at least 6 characters.');if(p!==$('#ap2').value)return err('Passwords do not match.');
-const salt=b64(crypto.getRandomValues(new Uint8Array(16))),a={id:uid(),name:n,salt,hash:await hashPw(p,salt),legacy:!L.length};L.push(a);try{localStorage.setItem(AK,JSON.stringify(L))}catch(x){return err('Could not save the account on this device.')}useAcct(a,keep)}
+const salt=b64(crypto.getRandomValues(new Uint8Array(16))),code=rcNew(),rs=b64(crypto.getRandomValues(new Uint8Array(16))),a={id:uid(),name:n,salt,hash:await hashPw(p,salt),rs,rh:await hashPw(rcNorm(code),rs),legacy:!L.length};L.push(a);try{localStorage.setItem(AK,JSON.stringify(L))}catch(x){return err('Could not save the account on this device.')}useAcct(a,keep);rcShow(code)}
 else{const a=pick||L.find(x=>x.name.toLowerCase()==n.toLowerCase());if(!a||await hashPw(p,a.salt)!==a.hash)return err('Wrong username or password.');useAcct(a,keep)}}}
 function boot(){const L=accts();let id=null;try{id=localStorage.getItem(SK)||sessionStorage.getItem(SK)}catch(e){}const a=L.find(x=>x.id==id);if(a)useAcct(a,!!localStorage.getItem(SK));else authUi()}
 // ---- Share or download
