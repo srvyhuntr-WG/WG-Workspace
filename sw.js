@@ -1,4 +1,4 @@
-const V = 'wg-v45';
+const V = 'wg-v47';
 const SHELL = V + '-shell', LIBS = 'wg-libs-v1', FONTS = 'wg-fonts-v1';
 const KEEP = [SHELL, LIBS, FONTS];
 const SHELL_FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png'];
@@ -12,7 +12,8 @@ const LIB_URLS = [
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'
+  'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js'
 ];
 const LIB_HOSTS = ['cdn.jsdelivr.net', 'cdnjs.cloudflare.com', 'tessdata.projectnaptha.com'];
 
